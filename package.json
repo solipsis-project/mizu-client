@@ -12,5 +12,10 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "levelgraph": "^3.0.0",
+    "n3": "^1.13.0",
+    "sparql-engine": "^0.8.2"
   }
 }
