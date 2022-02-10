@@ -31,7 +31,7 @@ const args = yargs(hideBin(process.argv))
                 return true;
             });
         },
-        function (argv) {
+        async function (argv) {
             const input = (() : Input => {
                 if (argv[Flags.PUBLISH_FILE]) {
                     return { type : Flags.PUBLISH_FILE, path : argv[Flags.PUBLISH_FILE] };
@@ -41,7 +41,7 @@ const args = yargs(hideBin(process.argv))
                 }
                 return { type : Flags.PUBLISH_CID, cid : argv[Flags.PUBLISH_CID] };
             })();
-            publish(getStorage(argv.storage), getInput(input, argv[Flags.IPFS_URL]));
+            publish(getStorage(argv.storage), await getInput(input, argv[Flags.IPFS_URL]));
         }
     )
     .strict().parse();

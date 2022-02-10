@@ -5,6 +5,12 @@ import { Flags, StorageType } from './flags';
 
 export type GraphClass = (new(db: any) => Graph);
 
+export interface Triple {
+    subject : string,
+    predicate : string,
+    object : string
+}
+
 export function getStorage(storageType : StorageType) : GraphClass {
     switch (storageType) {
         case Flags.STORAGE_N3:
