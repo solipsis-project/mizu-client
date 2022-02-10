@@ -1,29 +1,38 @@
 import { GraphClass, Triple } from './graph'
-import { CID } from 'ipfs-http-client'
+import { CID, IPFSHTTPClient } from 'ipfs-http-client'
 
 // Convert the JSON DAG to a series of triples
 // TODO: Series of quads? CID is the graph name, path is the subject name?
-function* parseDagJson(
+async function* parseDagJson(
         root_path : string,
         dag : object,
         follow_links : boolean,
-        visited_subjects : Set<string>) : IterableIterator<Triple> {
+        visited_subjects : Set<string>,
+        ipfs_client : IPFSHTTPClient) : AsyncGenerator<Triple> {
     if (visited_subjects.has(root_path))  {
         return;
     }
     visited_subjects.add(root_path);
-    // Handle special types for the value here. (For instance, it could be a CID.)
     for (const [key, value] of Object.entries(dag)) {
-        if (value instanceof Object) {
-            yield { subject : root_path, predicate : key, object : `${root_path}${key}/` }
-            yield* parseDagJson(`${root_path}${key}/`, value, follow_links, visited_subjects);
+        if (value instanceof CID) {
+            const child_path = value.toString();
+            yield { subject : root_path, predicate : key, object : child_path }
+            if (follow_links) {
+                const child_value = await ipfs_client.dag.get(value).then((dag) => dag.value);
+                yield* parseDagJson(child_path, child_value, follow_links, visited_subjects, ipfs_client);
+            }
+        }
+        else if (value instanceof Object) {
+            const child_path = `${root_path}/${key}`;
+            yield { subject : root_path, predicate : key, object : child_path }
+            yield* parseDagJson(child_path, value, follow_links, visited_subjects, ipfs_client);
         } else {
             yield { subject : root_path, predicate : key, object : value }
         }
     }
 }
 
-export async function publish(graphClass : GraphClass, dag : unknown) {
+export async function publish(graph : GraphClass, ipfs_client : IPFSHTTPClient, cid : CID, dag : unknown) {
     console.log(dag);
     if (!(dag instanceof Object)) {
         return;
