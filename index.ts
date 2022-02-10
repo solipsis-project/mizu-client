@@ -12,6 +12,10 @@ const args = yargs(hideBin(process.argv))
         choices : [Flags.STORAGE_N3, Flags.STORAGE_LEVELGRAPH],
         demandOption : true
     })
+    .option(Flags.DATABASE_PATH, {
+        type : "string",
+        demandOption : true
+    })
     .option(Flags.IPFS_URL, {
             type : "string",
             default : "http://localhost:5001/api/v0"
