@@ -3,6 +3,8 @@ export const Flags = {
     STORAGE_N3 : 'n3',
     STORAGE_LEVELGRAPH : 'levelgraph',
 
+    DATABASE_PATH : "db",
+
     IPFS_URL : 'ipfs',
 
     COMMAND_PUBLISH : 'publish',
