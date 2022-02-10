@@ -1,20 +1,11 @@
+import process from 'process'
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { getInput, Input } from './input';
-
-// Convert the JSON DAG to a series of triples
-// TODO: Series of quads? CID is the graph name, path is the subject name?
-function parseDagJson(dag : unknown, follow_links : boolean) {
-    
-}
-
-import process from 'process'
 import { Flags } from './flags';
-import { publish } from './publish';
 import { getStorage } from './graph';
-
-
+import { getInput, Input } from './input';
+import { publish } from './publish';
 
 const args = yargs(hideBin(process.argv))
     .option(Flags.STORAGE, {
