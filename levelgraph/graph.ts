@@ -1,15 +1,17 @@
 'use strict'
 
-import { BindingBase, HashMapDataset, Graph, PlanBuilder, Pipeline, ExecutionContext, StreamPipelineInput, Bindings, PipelineInput } from 'sparql-engine'
+import { BindingBase, Graph, Pipeline, ExecutionContext, StreamPipelineInput, Bindings, PipelineInput } from 'sparql-engine'
 import level from 'level'
 const levelgraph = require('levelgraph')
+
+// Based on sparql-engine/blob/master/examples/levelgraph.js
 
 export class LevelRDFGraph extends Graph {
   _db : any;
   
-  constructor (db) {
+  constructor (dbPath : string) {
     super()
-    this._db = db
+    this._db = levelgraph(level(dbPath));
   }
 
   evalBGP (bgp: any[], context: ExecutionContext) {
@@ -71,5 +73,9 @@ export class LevelRDFGraph extends Graph {
 
   clear(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  save(dbPath : string) {
+    // Nothing needs to be done here, database is update automatically.
   }
 }

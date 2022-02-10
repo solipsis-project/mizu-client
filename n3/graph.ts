@@ -1,7 +1,12 @@
 'use strict'
 
-import { Parser, Store } from 'n3'
+import N3 from 'n3'
 import { HashMapDataset, Graph, PlanBuilder } from 'sparql-engine'
+import fs from 'fs';
+import stream from 'stream';
+import { Quad } from 'rdf-js';
+
+// Based on sparql-engine/blob/master/examples/n3.js
 
 // Format a triple pattern according to N3 API:
 // SPARQL variables must be replaced by `null` values
@@ -23,10 +28,19 @@ function formatTriplePattern (triple) {
 
 export class N3Graph extends Graph {
 
-  _store : Store;
+  _store : N3.Store;
 
-  constructor (store : Store) {
+  constructor (dbPath : string) {
     super()
+    const store = new N3.Store();
+    const streamParser = new N3.StreamParser();
+    const dbInputStream = fs.createReadStream(dbPath);
+    dbInputStream.pipe(streamParser);
+    streamParser.pipe(new class extends stream.Writable {
+      _write(quad: Quad, encoding, done) {
+        store.add(quad);
+      }
+    }({ objectMode: true }));
     this._store = store;
   }
 
@@ -64,5 +78,13 @@ export class N3Graph extends Graph {
 
   clear(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  save(dbPath : string) {
+    // Create a single backup in case something catastophic happens.
+    fs.copyFileSync(dbPath, dbPath + '.bak');
+    const outputStream = fs.createWriteStream(dbPath);
+    const writer = new N3.Writer(outputStream, { end: false, prefixes: { c: 'http://example.org/cartoons#' } });
+    this._store.forEach((quad) => (writer.addQuad(quad)), null, null, null, null);
   }
 }

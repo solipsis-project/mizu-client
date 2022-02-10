@@ -3,7 +3,11 @@ import { N3Graph } from './n3/graph';
 import { LevelRDFGraph } from './levelgraph/graph';
 import { Flags, StorageType } from './flags';
 
-export type GraphClass = (new(db: any) => Graph);
+interface SaveableGraph extends Graph {
+    save(dbPath : string) : void;
+}
+
+export type GraphClass = (new(db_path: string) => SaveableGraph);
 
 export interface Triple {
     subject : string,
