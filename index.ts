@@ -1,3 +1,4 @@
+import { CID, create } from 'ipfs-http-client';
 import process from 'process'
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -45,7 +46,13 @@ const args = yargs(hideBin(process.argv))
                 }
                 return { type : Flags.PUBLISH_CID, cid : argv[Flags.PUBLISH_CID] };
             })();
-            publish(getStorage(argv.storage), await getInput(input, argv[Flags.IPFS_URL]));
+            const ipfs_client = await create({ url : argv[Flags.IPFS_URL] });
+            const dag = await getInput(input, ipfs_client);
+            const GraphClass = getStorage(argv[Flags.STORAGE]);
+            const graph = new GraphClass(argv[Flags.DATABASE_PATH]);
+            const cid = argv[Flags.PUBLISH_CID] ? CID.parse(argv[Flags.PUBLISH_CID]) : await ipfs_client.dag.put(dag);
+            publish(graph, ipfs_client, cid, dag);
+            graph.save(argv[Flags.DATABASE_PATH]);
         }
     )
     .strict().parse();

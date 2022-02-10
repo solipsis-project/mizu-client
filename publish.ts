@@ -1,5 +1,6 @@
 import { GraphClass, Triple } from './graph'
 import { CID, IPFSHTTPClient } from 'ipfs-http-client'
+import { Graph } from 'sparql-engine';
 
 // Convert the JSON DAG to a series of triples
 // TODO: Series of quads? CID is the graph name, path is the subject name?
@@ -32,12 +33,13 @@ async function* parseDagJson(
     }
 }
 
-export async function publish(graph : GraphClass, ipfs_client : IPFSHTTPClient, cid : CID, dag : unknown) {
+export async function publish(graph : Graph, ipfs_client : IPFSHTTPClient, cid : CID, dag : unknown) {
     console.log(dag);
     if (!(dag instanceof Object)) {
         return;
     }
-    for (const triple of parseDagJson('/', dag, false, new Set<string>())) {
+    for await (const triple of parseDagJson(cid.toString(), dag, true, new Set<string>(), ipfs_client)) {
         console.log(triple);
+        graph.insert(triple);
     }
 }
