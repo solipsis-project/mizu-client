@@ -1,7 +1,7 @@
 import { Graph } from 'sparql-engine';
-import { N3Graph } from './n3/graph';
-import { LevelRDFGraph } from './levelgraph/graph';
-import { Flags, StorageType } from './flags';
+import { N3Graph } from './n3';
+import { LevelRDFGraph } from './levelgraph';
+import { Flags, StorageType } from '../flags';
 
 interface SaveableGraph extends Graph {
     save(dbPath : string) : void;

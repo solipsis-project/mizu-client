@@ -4,7 +4,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 import { Flags } from './flags';
-import { getStorage } from './graph';
+import { getStorage } from './graph/graph';
 import { getInput, Input } from './input';
 import { publish } from './publish';
 

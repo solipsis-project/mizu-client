@@ -1,4 +1,4 @@
-import { GraphClass, Triple } from './graph'
+import { GraphClass, Triple } from './graph/graph'
 import { CID, IPFSHTTPClient } from 'ipfs-http-client'
 import { Graph } from 'sparql-engine';
 
