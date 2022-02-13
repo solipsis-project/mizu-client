@@ -10,7 +10,9 @@ export const Flags = {
     COMMAND_PUBLISH : 'publish',
     PUBLISH_FILE : 'file',
     PUBLISH_CID : 'cid',
-    PUBLISH_STDIN : 'stdin'
+    PUBLISH_STDIN : 'stdin',
+
+    COMMAND_DUMP : 'dump'
 } as const;
 
 export type StorageType = typeof Flags.STORAGE_N3 | typeof Flags.STORAGE_LEVELGRAPH;
