@@ -2,18 +2,9 @@ import { Graph } from 'sparql-engine';
 import { N3Graph } from './n3';
 import { LevelRDFGraph } from './levelgraph';
 import { Flags, StorageType } from '../flags';
+import { IPLD, LinkedDataGraph } from './common';
 
-interface SaveableGraph extends Graph {
-    save(dbPath : string) : void;
-}
-
-export type GraphClass = (new(db_path: string) => SaveableGraph);
-
-export interface Triple {
-    subject : string,
-    predicate : string,
-    object : string
-}
+export type GraphClass = (new(dbPath: string) => LinkedDataGraph);
 
 export function getStorage(storageType : StorageType) : GraphClass {
     switch (storageType) {
@@ -23,3 +14,5 @@ export function getStorage(storageType : StorageType) : GraphClass {
             return LevelRDFGraph;
     }
 }
+
+export { Triple } from './common';
