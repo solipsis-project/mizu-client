@@ -2,6 +2,7 @@ import { CID, IPFSHTTPClient } from 'ipfs-http-client';
 import fs from 'fs';
 
 import { Flags } from './flags';
+import { IPLD } from './graph/common';
 
 type File = { type : typeof Flags.PUBLISH_FILE, path : string };
 type StdIn = { type : typeof Flags.PUBLISH_STDIN };
@@ -9,7 +10,7 @@ type Cid = { type : typeof Flags.PUBLISH_CID, cid : string };
 export type Input = File | StdIn | Cid;
 
 
-export async function getInput(input : Input, ipfs_client : IPFSHTTPClient): Promise<unknown> {
+export async function getInput(input : Input, ipfs_client : IPFSHTTPClient): Promise<IPLD> {
     switch (input.type) {
         case Flags.PUBLISH_FILE:
             return fs.promises.readFile(input.path).then((buffer) => JSON.parse(buffer.toString()));
