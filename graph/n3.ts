@@ -1,16 +1,19 @@
 'use strict'
 
 import N3 from 'n3'
-import { HashMapDataset, Graph, PlanBuilder } from 'sparql-engine'
+import { HashMapDataset, Graph, PlanBuilder, ExecutionContext, PipelineInput } from 'sparql-engine'
 import fs from 'fs';
 import stream from 'stream';
-import { Quad } from 'rdf-js';
+
+import { IPLD, LinkedDataGraph, Triple } from './common';
+import dagToTriples from './dagToTriples';
+import { CID } from 'multiformats/cid';
 
 // Based on sparql-engine/blob/master/examples/n3.js
 
 // Format a triple pattern according to N3 API:
 // SPARQL variables must be replaced by `null` values
-function formatTriplePattern (triple) {
+function formatTriplePattern (triple : Triple) : Triple {
   let subject = null
   let predicate = null
   let object = null
@@ -26,65 +29,91 @@ function formatTriplePattern (triple) {
   return { subject, predicate, object }
 }
 
-export class N3Graph extends Graph {
+export class N3Graph extends Graph implements LinkedDataGraph {
 
-  _store : N3.Store;
+  _store : N3.N3StoreWriter;
 
   constructor (dbPath : string) {
-    super()
-    const store = new N3.Store();
-    const streamParser = new N3.StreamParser();
+    super();
+    this._store = N3.Store();
+    if (fs.existsSync(dbPath)) {
+      const content = fs.readFileSync(dbPath).toString('utf-8')
+      N3.Parser().parse(content).forEach(t => {
+        this._store.addTriple(t)
+      })
+    }
+    /*
+    const streamParser = N3.StreamParser();
     const dbInputStream = fs.createReadStream(dbPath);
-    dbInputStream.pipe(streamParser);
-    streamParser.pipe(new class extends stream.Writable {
-      _write(quad: Quad, encoding, done) {
-        store.add(quad);
-      }
-    }({ objectMode: true }));
-    this._store = store;
+    streamParser.parse(dbInputStream, console.log);*/
   }
 
-  insert (triple) {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        this._store.addQuad(triple.subject, triple.predicate, triple.object)
-        resolve()
-      } catch (e) {
-        reject(e)
-      }
-    })
+  async putIPLD(cid: CID, dag: IPLD): Promise<void> {
+    for await (const triple of dagToTriples(cid.toString(), dag, false)) {
+      console.log(triple);
+      await this.insert(triple);
+    }
   }
-
-  delete (triple) {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        this._store.removeQuad(triple.subject, triple.predicate, triple.object)
-        resolve()
-      } catch (e) {
-        reject(e)
-      }
-    })
+  
+  getIPLD(cid: CID, path: string): Promise<IPLD> {
+    throw new Error('Method not implemented.');
   }
-
-  find (triple) {
-    const { subject, predicate, object } = formatTriplePattern(triple)
-    return this._store.getQuads(subject, predicate, object, null)
-  }
-
-  estimateCardinality (triple) {
-    const { subject, predicate, object } = formatTriplePattern(triple)
-    return Promise.resolve(this._store.countQuads(subject, predicate, object, null))
-  }
-
-  clear(): Promise<void> {
+  
+  load(dbPath: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  save(dbPath : string) {
+
+  async insert (triple : Triple) {
+    this._store.addTriple(triple);
+  }
+
+  async delete (triple : Triple) {
+    this._store.removeTriple(triple);
+  }
+
+  find (triple : Triple, context : ExecutionContext) : PipelineInput<Triple> {
+    const formattedTriple = formatTriplePattern(triple)
+    return this._store.getTriples(formattedTriple);
+  }
+
+  estimateCardinality (triple : Triple) {
+    const formattedTriple = formatTriplePattern(triple)
+    return Promise.resolve(this._store.countTriples(formattedTriple))
+  }
+
+  clear(): Promise<void> {
+    const triples = this._store.getTriples(null, null, null)
+    this._store.removeTriples(triples)
+    return Promise.resolve()
+  }
+
+  async save(dbPath : string) {
     // Create a single backup in case something catastophic happens.
-    fs.copyFileSync(dbPath, dbPath + '.bak');
+    if (fs.existsSync(dbPath)) {
+      fs.copyFileSync(dbPath, dbPath + '.bak');
+    }
     const outputStream = fs.createWriteStream(dbPath);
-    const writer = new N3.Writer(outputStream, { end: false, prefixes: { c: 'http://example.org/cartoons#' } });
-    this._store.forEach((quad) => (writer.addQuad(quad)), null, null, null, null);
+    /*
+    const writer = N3.Writer(outputStream, { prefixes: { c: 'http://example.org/cartoons#' } });
+    this._store.forEach((quad) => {
+      console.log(quad);
+      writer.addTriple(quad);
+    });
+    /*this._store.getTriples(null, null, null).forEach((triple) => {
+      console.log(triple);
+      writer.addTriple(triple)
+    });*/
+    // writer.end();
+    
+    
+
+    /*
+    var streamParser = new N3.StreamParser(),
+    inputStream = fs.createReadStream('cartoons.ttl'),
+    streamWriter = new N3.StreamWriter({ prefixes: { c: 'http://example.org/cartoons#' } });
+    inputStream.pipe(streamParser);
+    streamParser.pipe(streamWriter);
+    streamWriter.pipe(outputStream);*/
   }
 }
