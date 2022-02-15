@@ -5,8 +5,10 @@ import level from 'level'
 const levelgraph = require('levelgraph')
 import jsonld from 'levelgraph-jsonld'
 
-import { IPLD, LinkedDataGraph, Triple } from './common'
+import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common'
 import { CID } from 'multiformats/cid'
+import { Algebra } from 'sparqljs'
+import { VectorStage } from 'sparql-engine/dist/engine/pipeline/vector-pipeline'
 
 // Based on sparql-engine/blob/master/examples/levelgraph.js
 
@@ -78,8 +80,13 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     })
   }
 
-  find(pattern: Triple, context? : ExecutionContext): PipelineInput<any> {
-    return new Promise<any>((resolve, reject) => {
+  find(pattern: Triple, context? : ExecutionContext): PipelineInput<Algebra.TripleObject> {
+    return this.findVector(pattern, context);
+  }
+
+  private findVector(pattern: Triple, context? : ExecutionContext): VectorStage<Algebra.TripleObject> {
+    // TODO: Compare against using RxjsStreamInput.
+    const promise = new Promise<Algebra.TripleObject[]>((resolve, reject) => {
       this._db.get(pattern, function(err, list) {
         if (err) {
           reject(err);
@@ -89,6 +96,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
         }
       });
     });
+    return new VectorStage<Algebra.TripleObject>(promise);
   }
 
   estimateCardinality (triple : Triple) {
@@ -111,14 +119,19 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
   
   async count(pattern = { subject : "?s", predicate : "?p", object : "?o" }) : Promise<number> {
     var total = 0;
-    await this.forEach((triple) => total++, pattern);
+    await this.forEach((triple) => { 
+      total = total + 1}, pattern);
     return Promise.resolve(total);
   }
 
   async forEach(consumer : (pattern : Triple) => void, pattern = { subject : "?s", predicate : "?p", object : "?o" }) : Promise<void> {
-    const stage = Pipeline.getInstance().from(this.find(pattern));
-    return new Promise<void>((resolve) => {
-      Pipeline.getInstance().forEach(stage, consumer);
+    const stage = this.findVector(pattern);
+    return new Promise((resolve, reject) => {
+      stage.subscribe(
+        (value) => { consumer(value); },
+        (err) => { throw err; },
+        () => { resolve(); }
+      );
     });
   }
 
