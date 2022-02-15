@@ -8,7 +8,7 @@ import { N3Graph } from '../graph/n3'
 import { LevelRDFGraph } from '../graph/levelgraph'
 import { resolveQuery } from '../graph/common'
 
-const tempContainingDir = `.${path.sep}temp${path.sep}`
+const tempContainingDir = `./temp/`
 
 async function clearTempFiles() : Promise<void> {
     return new Promise<void>((resolve, reject) => {
@@ -28,16 +28,15 @@ beforeAll(async () => {
 });
 
 async function withTempDir(dbPath : string, callback) {
-    const tempDir = fs.mkdtempSync(`${dbPath}${path.sep}`);
-    fs.mkdirSync(tempDir);
+    const tempDir = fs.mkdtempSync(`${dbPath}/`);
     await callback(tempDir)
     fs.rmSync(tempDir, { recursive : true, force : true});
 }
 
 describe.each([ N3Graph, LevelRDFGraph])("Graph tests %O", (GraphClass) => {
     test('single insert', async () => {    
-        withTempDir(tempContainingDir, async (tempDir) => {
-            const dbPath = `${tempDir}${path.sep}db`;
+        await withTempDir(tempContainingDir, async (tempDir) => {
+            const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             expect(await graph.count()).toBe(0);
             await graph.insert(makeTriple('a', 'b', 'c'));
@@ -54,8 +53,8 @@ describe.each([ N3Graph, LevelRDFGraph])("Graph tests %O", (GraphClass) => {
     });
 
     test('multiple inserts', async () => {   
-        withTempDir(tempContainingDir, async (tempDir) => { 
-            const dbPath = `${tempDir}${path.sep}db`;
+        await withTempDir(tempContainingDir, async (tempDir) => { 
+            const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             expect(await graph.count()).toBe(0);
             await graph.insert(makeTriple('a', 'b', 'c'));
