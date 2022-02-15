@@ -48,21 +48,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     streamParser.parse(dbInputStream, console.log);*/
   }
 
-  async putIPLD(cid: CID, dag: IPLD): Promise<void> {
-    for await (const triple of dagToTriples(cid.toString(), dag, false)) {
-      console.log(triple);
-      await this.insert(triple);
-    }
-  }
-  
-  getIPLD(cid: CID, path: string): Promise<IPLD> {
-    throw new Error('Method not implemented.');
-  }
-  
-  load(dbPath: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
+  // Methods inherited from Graph
 
   async insert (triple : Triple) {
     this._store.addTriple(triple);
@@ -77,15 +63,39 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     return this._store.getTriples(formattedTriple);
   }
 
-  estimateCardinality (triple : Triple) {
-    const formattedTriple = formatTriplePattern(triple)
-    return Promise.resolve(this._store.countTriples(formattedTriple))
-  }
-
   clear(): Promise<void> {
     const triples = this._store.getTriples(null, null, null)
     this._store.removeTriples(triples)
     return Promise.resolve()
+  }
+
+  // Methods inherited from LinkedDataGraph
+
+  count (triple? : Triple) {
+    if (!triple) {
+      return Promise.resolve(this._store.size);
+    }
+    const formattedTriple = formatTriplePattern(triple)
+    return Promise.resolve(this._store.countTriples(formattedTriple))
+  }
+
+  get forEach() {
+    return this._store.forEach;
+  }
+
+  async putIPLD(cid: CID, dag: IPLD): Promise<void> {
+    for await (const triple of dagToTriples(cid.toString(), dag, false)) {
+      console.log(triple);
+      await this.insert(triple);
+    }
+  }
+  
+  getIPLD(cid: CID, path: string): Promise<IPLD> {
+    throw new Error('Method not implemented.');
+  }
+  
+  load(dbPath: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async save(dbPath : string) {
@@ -106,8 +116,6 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     });*/
     // writer.end();
     
-    
-
     /*
     var streamParser = new N3.StreamParser(),
     inputStream = fs.createReadStream('cartoons.ttl'),

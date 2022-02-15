@@ -19,41 +19,10 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
   
   constructor (dbPath : string) {
     super();
+    this._db = levelgraph(level(dbPath));
   }
 
-  putIPLD(cid: CID, dag: IPLD): Promise<void> {
-    return this._db.jsonld.put(generateIds(cid, dag), (err, obj) => {
-      if (err) {
-        throw err;
-      }
-      return obj;
-    });
-  }
-
-  getIPLD(cid: CID, path: string): Promise<IPLD> {
-    return new Promise<IPLD>((resolve, reject) => {
-      this._db.jsonld.get(`${cid.toString}/${path}`, {}, function(err, obj) {
-        if(err) {
-          reject(err);
-        }
-        resolve(obj);
-      });
-    });
-  }
-
-  async load(dbPath : string) {
-    const localThis = this;
-    await new Promise<void>((resolve, reject) => {
-      localThis._db = jsonld(levelgraph(level(dbPath, function (err) {
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          resolve();
-        }
-      })));
-    }); 
-  }
+  // Methods inherited from Graph
 
   evalBGP (bgp: Triple[], context: ExecutionContext) : PipelineStage<Bindings> {
     // Connect the Node.js Readable stream
@@ -62,7 +31,6 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
       // rewrite variables using levelgraph API
       bgp = bgp.map(t => {
         if (t.subject.startsWith('?')) {
-          console.log("VARIABLE SUBJECT");
           t.subject = this._db.v(t.subject.substring(1))
         }
         if (t.predicate.startsWith('?')) {
@@ -139,6 +107,56 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     throw new Error('Method not implemented.');
   }
 
+  // Methods inherited from LinkedDataGraph
+  
+  async count(pattern = { subject : "?s", predicate : "?p", object : "?o" }) : Promise<number> {
+    var total = 0;
+    await this.forEach((triple) => total++, pattern);
+    return Promise.resolve(total);
+  }
+
+  async forEach(consumer : (pattern : Triple) => void, pattern = { subject : "?s", predicate : "?p", object : "?o" }) : Promise<void> {
+    const stage = Pipeline.getInstance().from(this.find(pattern));
+    return new Promise<void>((resolve) => {
+      Pipeline.getInstance().forEach(stage, consumer);
+    });
+  }
+
+  putIPLD(cid: CID, dag: IPLD): Promise<void> {
+    return this._db.jsonld.put(generateIds(cid, dag), (err, obj) => {
+      if (err) {
+        throw err;
+      }
+      return obj;
+    });
+  }
+
+  getIPLD(cid: CID, path: string): Promise<IPLD> {
+    return new Promise<IPLD>((resolve, reject) => {
+      this._db.jsonld.get(`${cid.toString}/${path}`, {}, function(err, obj) {
+        if(err) {
+          reject(err);
+        }
+        resolve(obj);
+      });
+    });
+  }
+
+  async load(dbPath : string) {
+    const localThis = this;
+    await new Promise<void>((resolve, reject) => {
+      const otherDb = jsonld(levelgraph(level(dbPath, function (err) {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          // TODO: merge other db into this one.
+          resolve();
+        }
+      })));
+    }); 
+  }
+  
   async save(dbPath : string) {
     // Nothing needs to be done here, database is update automatically.
   }
