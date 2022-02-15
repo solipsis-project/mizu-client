@@ -15,4 +15,4 @@ export function getStorage(storageType : StorageType) : GraphClass {
     }
 }
 
-export { Triple } from './common';
+export { Triple, makeTriple } from './common';
