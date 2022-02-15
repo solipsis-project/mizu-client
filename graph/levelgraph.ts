@@ -91,7 +91,6 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
         if (err) {
           reject(err);
         } else {
-          console.log(list);
           resolve(list);
         }
       });
