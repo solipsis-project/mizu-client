@@ -21,7 +21,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
   
   constructor (dbPath : string) {
     super();
-    this._db = levelgraph(level(dbPath));
+    this._db = jsonld(levelgraph(level(dbPath)));
   }
 
   // Methods inherited from Graph
@@ -135,6 +135,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
   }
 
   putIPLD(cid: CID, dag: IPLD): Promise<void> {
+    // TODO: Handle CIDs inside the dag.
     return this._db.jsonld.put(generateIds(cid, dag), (err, obj) => {
       if (err) {
         throw err;
@@ -143,7 +144,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     });
   }
 
-  getIPLD(cid: CID, path: string): Promise<IPLD> {
+  getIPLD(cid: { toString : () => string }, path: string): Promise<IPLD> {
     return new Promise<IPLD>((resolve, reject) => {
       this._db.jsonld.get(`${cid.toString}/${path}`, {}, function(err, obj) {
         if(err) {
