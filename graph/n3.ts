@@ -5,9 +5,11 @@ import { HashMapDataset, Graph, PlanBuilder, ExecutionContext, PipelineInput } f
 import fs from 'fs';
 import stream from 'stream';
 
-import { IPLD, LinkedDataGraph, Triple } from './common';
+import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common';
 import dagToTriples from './dagToTriples';
+import triplesToDag from './triplesToDag';
 import { CID } from 'multiformats/cid';
+import normalizePath from '../normalizePath';
 
 // Based on sparql-engine/blob/master/examples/n3.js
 
@@ -40,7 +42,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
       const content = fs.readFileSync(dbPath).toString('utf-8')
       N3.Parser().parse(content).forEach(t => {
         this._store.addTriple(t)
-      })
+      });
     }
     /*
     const streamParser = N3.StreamParser();
@@ -58,7 +60,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     this._store.removeTriple(triple);
   }
 
-  find (triple : Triple, context : ExecutionContext) : PipelineInput<Triple> {
+  find (triple : Triple = { subject : "?s", predicate : "?p", object : "?o" }, context? : ExecutionContext) : PipelineInput<Triple> {
     const formattedTriple = formatTriplePattern(triple)
     return this._store.getTriples(formattedTriple);
   }
@@ -90,12 +92,52 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     }
   }
   
-  getIPLD(cid: CID, path: string): Promise<IPLD> {
-    throw new Error('Method not implemented.');
+  async getIPLD(cid: { toString : () => any }, path: string, follow_links = false): Promise<IPLD> {
+    // Compute the root subject.
+    // Find all its properties
+    // Make new queries for them.
+    // Be sure to detect cycles.
+    // TODO: We make a dag of the entire datastore. This is slow because it implicitly follows all links.
+    // Making as-needed queries is probably better.
+    /*
+    const root = normalizePath(`${cid.toString()}/${path}`);
+    return triplesToDag(root, this.find() as Triple[], follow_links);
+    */
+    const root = normalizePath(`${cid.toString()}/${path}`);
+    // this.find({ subject : root, predicate : '?p', object '?o'})
+    const subjects = new Map<string, IPLD>();
+    const graph = this;
+
+    async function getSubject(subject : string) : Promise<IPLD> {
+        if (subjects.has(subject)) {
+          return subjects.get(subject);
+        }
+        const subjectLinkedData = {};
+        subjects.set(subject, subjectLinkedData);
+      // TODO: why does this return every record in the datastore?
+      const query = `
+      PREFIX MIZU: <https://mizu.io/>
+      SELECT ?p ?o
+      WHERE {
+      <${subject}> ?p ?o
+      }`;
+      console.log(query);
+      for (const result of await resolveQuery(graph, query)) {
+        console.log(result);
+        const resultLinkedData = await getSubject(result['?o']);
+        subjectLinkedData[result['?p']] = resultLinkedData;
+      }
+      return subjectLinkedData;
+    }
+
+    return getSubject(root);
   }
   
-  load(dbPath: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  async load(dbPath: string): Promise<void> {
+    const content = fs.readFileSync(dbPath).toString('utf-8')
+      N3.Parser().parse(content).forEach(t => {
+        this._store.addTriple(t)
+      });
   }
 
   async save(dbPath : string) {
