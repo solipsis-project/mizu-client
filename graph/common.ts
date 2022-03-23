@@ -32,7 +32,11 @@ export function makeTriple(subject: string, predicate: string, object: string) {
         // -figure out what's going on with "start" and "end"
 
 export function resolveQuery(graph : LinkedDataGraph, query : string) : Promise<Array<any>> {
-    const IRI = 'http://example.org#graph-a'
+    const IRI = "https://mizu.io/";
+
+    const baseQuery = `
+    BASE <${IRI}>
+    ${query}`
        
     const dataset = new HashMapDataset(IRI, graph)
        
@@ -40,7 +44,7 @@ export function resolveQuery(graph : LinkedDataGraph, query : string) : Promise<
   const builder = new PlanBuilder(dataset)
 
   // Get an iterator to evaluate the query
-  const iterator = builder.build(query) as PipelineStage<QueryOutput>;
+  const iterator = builder.build(baseQuery) as PipelineStage<QueryOutput>;
 
   // Read results
   return new Promise<Array<any>>((resolve, reject) => {
