@@ -1,40 +1,43 @@
 import { Triple } from ".";
 import { IPLD, IPLDValue } from "./common";
+import { inspect } from 'util';
+import _ from 'lodash';
 
-function collapseIds(dag : IPLD) : IPLD {
-    return Object.fromEntries(Object.entries(dag).map(([key, value]) => {
-        if (Object.keys(value) == ["@id"]) {
-            return [key, value["@id"]];
+// An intermediate representation of parsed triple data. It needs to be cleaned up with parseIPLD to:
+// - replace empty sets with their ids
+// - replace single-element sets with their only element
+type TripleRecord = { id : string, records : { [x : string] : TripleRecord[] } }
+
+function parseIPLD(dag : TripleRecord) : IPLDValue {
+    if (_.isEmpty(dag.records)) {
+        return dag.id;
+    }   
+    const objectEntries = Object.entries(dag.records).map(([key , value]) => {
+        // console.log(`Entry: ${key}, ${value}`);
+        if (value.length == 1) {
+            return [key, parseIPLD(value[0])];
         }
-        return [key, value];
-    }).flatMap(([key, value]) => {
-        if (key == "@id") {
-            return [];
-        }
-        return [[key, value]];
-    }));
+        return [key, value.map(parseIPLD)];
+    });
+    return Object.fromEntries(objectEntries);
 }
 
 export default function triplesToDag(
         root : string,
         triples : Triple[],
-        follow_links : boolean) : IPLD {
-    var hashTable : { [x : string ] : { [x : string] : IPLDValue[] } } = {};
+        follow_links : boolean) : IPLDValue {
+    var hashTable : { [x : string] : TripleRecord } = {};
     for (const { subject, predicate, object } of triples) {
         if (!(subject in hashTable)) {
-            hashTable[subject] = { "@id" : [subject] };
+            hashTable[subject] = { id : subject, records : {} };
         }
         if (!(object in hashTable)) {
-            hashTable[object] = { "@id" : [object] };
+            hashTable[object] = { id : object, records : {} };
         }
         if (!(predicate in hashTable[subject])) {
-            hashTable[subject][predicate] = [];
+            hashTable[subject].records[predicate] = [];
         }
-        hashTable[subject][predicate].push(hashTable[object]);
+        hashTable[subject].records[predicate].push(hashTable[object]);
     }
-    console.log("RESULT");
-    console.log(hashTable);
-    console.log("ROOT");
-    console.log(root);
-    return hashTable[root];
+    return parseIPLD(hashTable[root]);
 }
