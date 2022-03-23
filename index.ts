@@ -3,7 +3,7 @@ import process from 'process'
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { Flags } from './flags';
+import { Flags, StorageChoices } from './flags';
 import { getStorage } from './graph';
 import { getInput, Input } from './input';
 import { publish } from './publish';
@@ -11,7 +11,7 @@ import { dump } from './dump';
 
 const args = yargs(hideBin(process.argv))
     .option(Flags.STORAGE, {
-        choices : [Flags.STORAGE_N3, Flags.STORAGE_LEVELGRAPH],
+        choices : StorageChoices,
         demandOption : true
     })
     .option(Flags.DATABASE_PATH, {
@@ -51,8 +51,6 @@ const args = yargs(hideBin(process.argv))
             const dag = await getInput(input, ipfs_client);
             const GraphClass = getStorage(argv[Flags.STORAGE]);
             const graph = new GraphClass(argv[Flags.DATABASE_PATH]);
-            await graph.load(argv[Flags.DATABASE_PATH]);
-            //console.log(await graph.estimateCardinality({ subject : "?s", predicate : "?p", object : "?o"}));
             console.log(await graph.find({ subject : "?s", predicate : "?p", object : "?o"}, null));
             const cid = argv[Flags.PUBLISH_CID] ? CID.parse(argv[Flags.PUBLISH_CID]) : await ipfs_client.dag.put(dag);
             await publish(graph, ipfs_client, cid, dag);

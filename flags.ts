@@ -2,6 +2,7 @@ export const Flags = {
     STORAGE : 'storage',
     STORAGE_N3 : 'n3',
     STORAGE_LEVELGRAPH : 'levelgraph',
+    STORAGE_MOCK : 'mock',
 
     DATABASE_PATH : "db",
 
@@ -15,9 +16,8 @@ export const Flags = {
     COMMAND_DUMP : 'dump'
 } as const;
 
-export type StorageType = typeof Flags.STORAGE_N3 | typeof Flags.STORAGE_LEVELGRAPH;
-
-
+export const StorageChoices = [Flags.STORAGE_N3, Flags.STORAGE_LEVELGRAPH, Flags.STORAGE_MOCK];
+export type StorageType = typeof StorageChoices[number];
 
 
 
