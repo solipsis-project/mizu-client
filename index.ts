@@ -6,8 +6,9 @@ import { hideBin } from 'yargs/helpers';
 import { Flags, StorageChoices } from './flags';
 import { getStorage } from './graph';
 import { getInput, Input } from './input';
-import { publish } from './publish';
+import { publish, publishCli } from './publish';
 import { dump } from './dump';
+import { PublishOptions } from './options';
 
 const args = yargs(hideBin(process.argv))
     .option(Flags.STORAGE, {
@@ -47,14 +48,15 @@ const args = yargs(hideBin(process.argv))
                 }
                 return { type : Flags.PUBLISH_CID, cid : argv[Flags.PUBLISH_CID] };
             })();
-            const ipfs_client = await create({ url : argv[Flags.IPFS_URL] });
-            const dag = await getInput(input, ipfs_client);
-            const GraphClass = getStorage(argv[Flags.STORAGE]);
-            const graph = new GraphClass(argv[Flags.DATABASE_PATH]);
-            console.log(await graph.find({ subject : "?s", predicate : "?p", object : "?o"}, null));
-            const cid = argv[Flags.PUBLISH_CID] ? CID.parse(argv[Flags.PUBLISH_CID]) : await ipfs_client.dag.put(dag);
-            await publish(graph, ipfs_client, cid, dag);
-            graph.save(argv[Flags.DATABASE_PATH]);
+            const options : PublishOptions = {
+                storageType : argv[Flags.STORAGE],
+                databasePath : argv[Flags.DATABASE_PATH],
+                ipfsOptions : {
+                    url : argv[Flags.IPFS_URL]
+                },
+                input : input,
+            }
+            await publishCli(options);
         }
     )
     .command(Flags.COMMAND_DUMP, false,
