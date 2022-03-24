@@ -39,5 +39,8 @@ export default function triplesToDag(
         }
         hashTable[subject].records[predicate].push(hashTable[object]);
     }
-    return parseIPLD(hashTable[root]);
+    if (root in hashTable) {
+        return parseIPLD(hashTable[root]);
+    }
+    return {};
 }

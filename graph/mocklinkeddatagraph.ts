@@ -88,7 +88,8 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     // Making as-needed queries is probably better.
     
     if (true) {
-      const root = normalizePath(`${cid.toString()}/${path}`);
+      const cidAndPath = normalizePath(`${cid.toString()}/${path}`);
+      const root = `https://mizu.io/${cidAndPath}`;
       return triplesToDag(root, Array.from(this.find()), follow_links) as IPLD;
     }
     

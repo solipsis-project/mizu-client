@@ -40,7 +40,7 @@ async function withTempDir(dbPath : string, callback) {
     fs.rmSync(tempDir, { recursive : true, force : true});
 }
 
-describe.each([ N3Graph, LevelRDFGraph, MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
+describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
     test('empty graph', async () => {    
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
@@ -84,10 +84,10 @@ describe.each([ N3Graph, LevelRDFGraph, MockLinkedDataGraph ])("Graph tests %O",
             expect(await graph.count()).toBe(0);
             await graph.insert(makeTriple('https://mizu.io/a', 'https://mizu.io/b', 'https://mizu.io/c'));
             expect(await graph.count()).toBe(1);
-            console.log(await graph.getIPLD({ toString : () => 'https://mizu.io/a' }, ''));
+            console.log(await graph.getIPLD({ toString : () => 'a' }, ''));
             await graph.insert(makeTriple('https://mizu.io/d', 'https://mizu.io/e', 'https://mizu.io/f'));
             expect(await graph.count()).toBe(2);
-            console.log(await graph.getIPLD({ toString : () => 'https://mizu.io/a' }, ''));
+            console.log(await graph.getIPLD({ toString : () => 'a' }, ''));
 
             const query = `
             SELECT ?s
