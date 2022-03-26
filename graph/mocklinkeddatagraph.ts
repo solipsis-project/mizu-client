@@ -14,39 +14,39 @@ import normalizePath from '../normalizePath';
 // The simplest possible implementation of a triplestore and linked data graph.
 // Useful for tests.
 
-function isVariable(name : string) : boolean {
+function isVariable(name: string): boolean {
   return name.startsWith('?');
 }
 
 export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
-  triples : Set<Triple> = new Set<Triple>();
+  triples: Set<Triple> = new Set<Triple>();
 
-  constructor (dbPath : string) {
+  constructor(dbPath: string) {
     super();
   }
 
   // Methods inherited from Graph
 
-  insert (triple : Triple) {
+  insert(triple: Triple) {
     this.triples.add(triple);
     return Promise.resolve();
   }
 
-  delete (triple : Triple) {
+  delete(triple: Triple) {
     this.triples.delete(triple);
     return Promise.resolve();
   }
 
-  find (pattern? : Triple, context? : ExecutionContext) : Set<Triple> {
+  find(pattern?: Triple, context?: ExecutionContext): Set<Triple> {
     if (!pattern) {
       return this.triples;
     }
     var results = new Set<Triple>();
     this.triples.forEach((triple) => {
       if ((isVariable(pattern.subject) || (pattern.subject == triple.subject)) &&
-      (isVariable(pattern.predicate) || (pattern.predicate == triple.predicate)) &&
-      (isVariable(pattern.object) || (pattern.object == triple.object))) {
+        (isVariable(pattern.predicate) || (pattern.predicate == triple.predicate)) &&
+        (isVariable(pattern.object) || (pattern.object == triple.object))) {
         results.add(triple);
       }
     });
@@ -60,50 +60,50 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
   // Methods inherited from LinkedDataGraph
 
-  count (pattern? : Triple) {
+  count(pattern?: Triple) {
     if (!pattern) {
       return Promise.resolve(this.triples.size);
     }
     return Promise.resolve(this.find(pattern).size)
   }
 
-  forEach (callback) {
+  forEach(callback) {
     this.triples.forEach(callback);
     return Promise.resolve();
   }
 
   async putIPLD(cid: CID, dag: IPLD): Promise<void> {
-    for await (const triple of dagToTriples(cid.toString(), dag, false)) {
+    for await (const triple of dagToTriples(`https://mizu.io/${cid.toString()}`, dag, false)) {
       console.log(triple);
       await this.insert(triple);
     }
   }
-  
-  async getIPLD(cid: { toString : () => any }, path: string, follow_links = false): Promise<IPLD> {
+
+  async getIPLD(cid: { toString: () => any }, path: string, follow_links = false): Promise<IPLD> {
     // Compute the root subject.
     // Find all its properties
     // Make new queries for them.
     // Be sure to detect cycles.
     // TODO: We make a dag of the entire datastore. This is slow because it implicitly follows all links.
     // Making as-needed queries is probably better.
-    
+
     if (true) {
       const cidAndPath = normalizePath(`${cid.toString()}/${path}`);
       const root = `https://mizu.io/${cidAndPath}`;
       return triplesToDag(root, Array.from(this.find()), follow_links) as IPLD;
     }
-    
+
     const root = normalizePath(`${cid.toString()}/${path}`);
     // this.find({ subject : root, predicate : '?p', object '?o'})
     const subjects = new Map<string, IPLD>();
     const graph = this;
 
-    async function getSubject(subject : string) : Promise<IPLD> {
-        if (subjects.has(subject)) {
-          return subjects.get(subject);
-        }
-        const subjectLinkedData = {};
-        subjects.set(subject, subjectLinkedData);
+    async function getSubject(subject: string): Promise<IPLD> {
+      if (subjects.has(subject)) {
+        return subjects.get(subject);
+      }
+      const subjectLinkedData = {};
+      subjects.set(subject, subjectLinkedData);
       // TODO: why does this return every record in the datastore?
       const query = `
       SELECT ?p ?o
@@ -120,7 +120,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
     return getSubject(root);
   }
-  
+
   async load(dbPath: string): Promise<void> {
     // This won't handle unescaped commas in data, but it's good enough for now.
     const content = fs.readFileSync(dbPath).toString('utf-8')
@@ -133,7 +133,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     })
   }
 
-  async save(dbPath : string) {
+  async save(dbPath: string) {
     // Create a single backup in case something catastophic happens.
     if (fs.existsSync(dbPath)) {
       fs.copyFileSync(dbPath, dbPath + '.bak');
