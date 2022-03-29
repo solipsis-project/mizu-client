@@ -15,8 +15,8 @@ export interface LinkedDataGraph extends Graph {
     count(pattern?: Triple): Promise<number>;
     forEach(consumer: (pattern: Triple) => void): Promise<void>;
 
-    putIPLD(cid: CID, dag: IPLDObject): Promise<void>;
-    getIPLD(cid: CID, path: string): Promise<IPLDObject>;
+    putIPLD(root: string, dag: IPLDObject): Promise<void>;
+    getIPLD(root: string): Promise<IPLDObject>;
 
     load(dbPath: string): Promise<void>;
     save(dbPath: string): Promise<void>;

@@ -15,7 +15,7 @@ import normalizePath from '../normalizePath';
 
 // Format a triple pattern according to N3 API:
 // SPARQL variables must be replaced by `null` values
-function formatTriplePattern (triple : Triple) : Triple {
+function formatTriplePattern(triple: Triple): Triple {
   let subject = null
   let predicate = null
   let object = null
@@ -33,9 +33,9 @@ function formatTriplePattern (triple : Triple) : Triple {
 
 export class N3Graph extends Graph implements LinkedDataGraph {
 
-  _store : N3.N3StoreWriter;
+  _store: N3.N3StoreWriter;
 
-  constructor (dbPath : string) {
+  constructor(dbPath: string) {
     super();
     this._store = N3.Store();
     if (fs.existsSync(dbPath)) {
@@ -52,15 +52,15 @@ export class N3Graph extends Graph implements LinkedDataGraph {
 
   // Methods inherited from Graph
 
-  async insert (triple : Triple) {
+  async insert(triple: Triple) {
     this._store.addTriple(triple);
   }
 
-  async delete (triple : Triple) {
+  async delete(triple: Triple) {
     this._store.removeTriple(triple);
   }
 
-  find (triple : Triple = { subject : "?s", predicate : "?p", object : "?o" }, context? : ExecutionContext) : PipelineInput<Triple> {
+  find(triple: Triple = { subject: "?s", predicate: "?p", object: "?o" }, context?: ExecutionContext): PipelineInput<Triple> {
     const formattedTriple = formatTriplePattern(triple)
     return this._store.getTriples(formattedTriple);
   }
@@ -73,7 +73,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
 
   // Methods inherited from LinkedDataGraph
 
-  count (triple? : Triple) {
+  count(triple?: Triple) {
     if (!triple) {
       return Promise.resolve(this._store.size);
     }
@@ -85,14 +85,14 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     return this._store.forEach;
   }
 
-  async putIPLD(cid: CID, dag: IPLD): Promise<void> {
-    for await (const triple of dagToTriples(cid.toString(), dag, false)) {
+  async putIPLD(path: string, dag: IPLD): Promise<void> {
+    for await (const triple of dagToTriples(path, dag, false)) {
       console.log(triple);
       await this.insert(triple);
     }
   }
-  
-  async getIPLD(cid: { toString : () => any }, path: string, follow_links = false): Promise<IPLD> {
+
+  async getIPLD(root: string, follow_links = false): Promise<IPLD> {
     // Compute the root subject.
     // Find all its properties
     // Make new queries for them.
@@ -100,20 +100,18 @@ export class N3Graph extends Graph implements LinkedDataGraph {
     // TODO: We make a dag of the entire datastore. This is slow because it implicitly follows all links.
     // Making as-needed queries is probably better.
     /*
-    const root = normalizePath(`${cid.toString()}/${path}`);
     return triplesToDag(root, this.find() as Triple[], follow_links);
     */
-    const root = normalizePath(`${cid.toString()}/${path}`);
     // this.find({ subject : root, predicate : '?p', object '?o'})
     const subjects = new Map<string, IPLD>();
     const graph = this;
 
-    async function getSubject(subject : string) : Promise<IPLD> {
-        if (subjects.has(subject)) {
-          return subjects.get(subject);
-        }
-        const subjectLinkedData = {};
-        subjects.set(subject, subjectLinkedData);
+    async function getSubject(subject: string): Promise<IPLD> {
+      if (subjects.has(subject)) {
+        return subjects.get(subject);
+      }
+      const subjectLinkedData = {};
+      subjects.set(subject, subjectLinkedData);
       // TODO: why does this return every record in the datastore?
       const query = `
       PREFIX MIZU: <https://mizu.io/>
@@ -132,15 +130,15 @@ export class N3Graph extends Graph implements LinkedDataGraph {
 
     return getSubject(root);
   }
-  
+
   async load(dbPath: string): Promise<void> {
     const content = fs.readFileSync(dbPath).toString('utf-8')
-      N3.Parser().parse(content).forEach(t => {
-        this._store.addTriple(t)
-      });
+    N3.Parser().parse(content).forEach(t => {
+      this._store.addTriple(t)
+    });
   }
 
-  async save(dbPath : string) {
+  async save(dbPath: string) {
     // Create a single backup in case something catastophic happens.
     if (fs.existsSync(dbPath)) {
       fs.copyFileSync(dbPath, dbPath + '.bak');
@@ -157,7 +155,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
       writer.addTriple(triple)
     });*/
     // writer.end();
-    
+
     /*
     var streamParser = new N3.StreamParser(),
     inputStream = fs.createReadStream('cartoons.ttl'),

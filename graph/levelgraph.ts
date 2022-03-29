@@ -12,24 +12,24 @@ import { VectorStage } from 'sparql-engine/dist/engine/pipeline/vector-pipeline'
 
 // Based on sparql-engine/blob/master/examples/levelgraph.js
 
-function generateIds(cid : CID, dag : IPLD) : IPLD {
+function generateIds(path: string, dag: IPLD): IPLD {
   return dag;
 }
 
 export class LevelRDFGraph extends Graph implements LinkedDataGraph {
-  _db : any;
-  
-  constructor (dbPath : string) {
+  _db: any;
+
+  constructor(dbPath: string) {
     super();
     this._db = jsonld(levelgraph(level(dbPath)));
   }
 
   // Methods inherited from Graph
 
-  evalBGP (bgp: Triple[], context: ExecutionContext) : PipelineStage<Bindings> {
+  evalBGP(bgp: Triple[], context: ExecutionContext): PipelineStage<Bindings> {
     // Connect the Node.js Readable stream
     // into the SPARQL query engine using the fromAsync method
-    return Pipeline.getInstance().fromAsync((input : StreamPipelineInput<Bindings>) => {
+    return Pipeline.getInstance().fromAsync((input: StreamPipelineInput<Bindings>) => {
       // rewrite variables using levelgraph API
       bgp = bgp.map(t => {
         if (t.subject.startsWith('?')) {
@@ -55,7 +55,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
   }
 
 
-  insert (triple : Triple) {
+  insert(triple: Triple) {
     // TODO: Configure combination of backend/storage (using levelgraph-n3 and levelgraph-jsonld)
     return new Promise<void>((resolve, reject) => {
       this._db.put(triple, err => {
@@ -68,7 +68,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     })
   }
 
-  delete (triple : Triple) {
+  delete(triple: Triple) {
     return new Promise<void>((resolve, reject) => {
       this._db.del(triple, err => {
         if (err) {
@@ -80,14 +80,14 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     })
   }
 
-  find(pattern: Triple, context? : ExecutionContext): PipelineInput<Algebra.TripleObject> {
+  find(pattern: Triple, context?: ExecutionContext): PipelineInput<Algebra.TripleObject> {
     return this.findVector(pattern, context);
   }
 
-  private findVector(pattern: Triple, context? : ExecutionContext): VectorStage<Algebra.TripleObject> {
+  private findVector(pattern: Triple, context?: ExecutionContext): VectorStage<Algebra.TripleObject> {
     // TODO: Compare against using RxjsStreamInput.
     const promise = new Promise<Algebra.TripleObject[]>((resolve, reject) => {
-      this._db.get(pattern, function(err, list) {
+      this._db.get(pattern, function (err, list) {
         if (err) {
           reject(err);
         } else {
@@ -98,7 +98,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     return new VectorStage<Algebra.TripleObject>(promise);
   }
 
-  estimateCardinality (triple : Triple) {
+  estimateCardinality(triple: Triple) {
     return new Promise<any>((resolve, reject) => {
       this._db.approximateSize(triple, (err, result) => {
         if (err) {
@@ -115,15 +115,16 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
   }
 
   // Methods inherited from LinkedDataGraph
-  
-  async count(pattern = { subject : "?s", predicate : "?p", object : "?o" }) : Promise<number> {
+
+  async count(pattern = { subject: "?s", predicate: "?p", object: "?o" }): Promise<number> {
     var total = 0;
-    await this.forEach((triple) => { 
-      total = total + 1}, pattern);
+    await this.forEach((triple) => {
+      total = total + 1
+    }, pattern);
     return Promise.resolve(total);
   }
 
-  async forEach(consumer : (pattern : Triple) => void, pattern = { subject : "?s", predicate : "?p", object : "?o" }) : Promise<void> {
+  async forEach(consumer: (pattern: Triple) => void, pattern = { subject: "?s", predicate: "?p", object: "?o" }): Promise<void> {
     const stage = this.findVector(pattern);
     return new Promise((resolve, reject) => {
       stage.subscribe(
@@ -134,9 +135,9 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     });
   }
 
-  putIPLD(cid: CID, dag: IPLD): Promise<void> {
+  putIPLD(root: string, dag: IPLD): Promise<void> {
     // TODO: Handle CIDs inside the dag.
-    return this._db.jsonld.put(generateIds(cid, dag), (err, obj) => {
+    return this._db.jsonld.put(generateIds(root, dag), (err, obj) => {
       if (err) {
         throw err;
       }
@@ -144,10 +145,10 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     });
   }
 
-  getIPLD(cid: { toString : () => string }, path: string): Promise<IPLD> {
+  getIPLD(path: string): Promise<IPLD> {
     return new Promise<IPLD>((resolve, reject) => {
-      this._db.jsonld.get(`${cid.toString}/${path}`, {}, function(err, obj) {
-        if(err) {
+      this._db.jsonld.get(path, {}, function (err, obj) {
+        if (err) {
           reject(err);
         }
         resolve(obj);
@@ -155,7 +156,7 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
     });
   }
 
-  async load(dbPath : string) {
+  async load(dbPath: string) {
     const localThis = this;
     await new Promise<void>((resolve, reject) => {
       const otherDb = jsonld(levelgraph(level(dbPath, function (err) {
@@ -167,10 +168,10 @@ export class LevelRDFGraph extends Graph implements LinkedDataGraph {
           resolve();
         }
       })));
-    }); 
+    });
   }
-  
-  async save(dbPath : string) {
+
+  async save(dbPath: string) {
     // Nothing needs to be done here, database is update automatically.
   }
 }

@@ -78,14 +78,14 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     return Promise.resolve();
   }
 
-  async putIPLD(cid: CID, dag: IPLDObject): Promise<void> {
-    for await (const triple of dagToTriples(`${IRI}${cid.toString()}`, dag, false)) {
+  async putIPLD(root: string, dag: IPLDObject): Promise<void> {
+    for await (const triple of dagToTriples(root, dag, false)) {
       console.log(triple);
       await this.insert(triple);
     }
   }
 
-  async getIPLD(cid: { toString: () => any }, path: string, follow_links = false): Promise<IPLDObject> {
+  async getIPLD(root: string, follow_links = false): Promise<IPLDObject> {
     // Compute the root subject.
     // Find all its properties
     // Make new queries for them.
@@ -94,13 +94,9 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     // Making as-needed queries is probably better.
 
     if (true) {
-      const cidAndPath = normalizePath(`${cid.toString()}/${path}`);
-      const root = `https://mizu.io/${cidAndPath}`;
       return triplesToDag(root, Array.from(this.find()), follow_links) as IPLD;
     }
 
-    const root = normalizePath(`${cid.toString()}/${path}`);
-    // this.find({ subject : root, predicate : '?p', object '?o'})
     const subjects = new Map<string, IPLD>();
     const graph = this;
 
