@@ -1,11 +1,10 @@
 'use strict'
 
-import N3 from 'n3'
-import { HashMapDataset, Graph, PlanBuilder, ExecutionContext, PipelineInput } from 'sparql-engine'
+import { Graph, ExecutionContext } from 'sparql-engine'
 import fs from 'fs';
-import stream from 'stream';
+import util from 'util';
 
-import { IPLD, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common';
+import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common';
 import dagToTriples from './dagToTriples';
 import triplesToDag from './triplesToDag';
 import { CID } from 'multiformats/cid';
@@ -24,6 +23,9 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
   constructor(dbPath: string) {
     super();
+    if (fs.existsSync(dbPath)) {
+      this.load(dbPath);
+    }
   }
 
   // Methods inherited from Graph
@@ -42,10 +44,14 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     if (!pattern) {
       return this.triples;
     }
+    // Remove domain name from predicate, since we don't store it in the database.
+    // Not that this assumes that the domain for the predicate will always be the Mizu IRI,
+    // Which is true if only relative IRIs are used, since we set the base.
+    const predicate = pattern.predicate.slice(IRI.length);
     var results = new Set<Triple>();
     this.triples.forEach((triple) => {
       if ((isVariable(pattern.subject) || (pattern.subject == triple.subject)) &&
-        (isVariable(pattern.predicate) || (pattern.predicate == triple.predicate)) &&
+        (isVariable(pattern.predicate) || (predicate == triple.predicate)) &&
         (isVariable(pattern.object) || (pattern.object == triple.object))) {
         results.add(triple);
       }
@@ -72,14 +78,14 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     return Promise.resolve();
   }
 
-  async putIPLD(cid: CID, dag: IPLD): Promise<void> {
-    for await (const triple of dagToTriples(`https://mizu.io/${cid.toString()}`, dag, false)) {
+  async putIPLD(cid: CID, dag: IPLDObject): Promise<void> {
+    for await (const triple of dagToTriples(`${IRI}${cid.toString()}`, dag, false)) {
       console.log(triple);
       await this.insert(triple);
     }
   }
 
-  async getIPLD(cid: { toString: () => any }, path: string, follow_links = false): Promise<IPLD> {
+  async getIPLD(cid: { toString: () => any }, path: string, follow_links = false): Promise<IPLDObject> {
     // Compute the root subject.
     // Find all its properties
     // Make new queries for them.
