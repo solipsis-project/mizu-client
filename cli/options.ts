@@ -10,7 +10,7 @@ export type InputOption =
 
 export enum StorageType { N3, LevelGraph, Mock }
 
-export type CommandOptions = {
+export type BaseCommandOptions = {
     storageType: StorageType,
     databasePath: string,
     ipfsOptions: IPFSOptions,

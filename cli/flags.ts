@@ -1,13 +1,17 @@
 const Flags = {
-    STORAGE : 'storage',
-    STORAGE_N3 : 'n3',
-    STORAGE_LEVELGRAPH : 'levelgraph',
-    STORAGE_MOCK : 'mock',
+    STORAGE: 'storage',
+    STORAGE_N3: 'n3',
+    STORAGE_LEVELGRAPH: 'levelgraph',
+    STORAGE_MOCK: 'mock',
 
-    DATABASE_PATH : "db",
+    INPUT_FILE: 'file',
+    INPUT_STDIN: 'stdin',
+    INPUT_CID: 'cid',
 
-    IPFS_URL : 'ipfs',
-};
+    DATABASE_PATH: "db",
+
+    IPFS_URL: 'ipfs',
+} as const;
 
 export default Flags;
 
@@ -16,4 +20,3 @@ export type StorageType = typeof StorageChoices[number];
 
 
 
- 
