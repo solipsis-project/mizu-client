@@ -11,9 +11,9 @@ import { resolveQuery } from '../graph/common'
 
 const tempContainingDir = `./temp/`
 
-async function clearTempFiles(createTestDir : boolean) : Promise<void> {
+async function clearTempFiles(createTestDir: boolean): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        fs.rm(tempContainingDir, { recursive : true, force : true }, (err) => {
+        fs.rm(tempContainingDir, { recursive: true, force: true }, (err) => {
             if (err) {
                 reject(err);
             } else {
@@ -34,14 +34,14 @@ afterAll(async () => {
     await clearTempFiles(false);
 });
 
-async function withTempDir(dbPath : string, callback) {
+async function withTempDir(dbPath: string, callback) {
     const tempDir = fs.mkdtempSync(`${dbPath}/`);
     await callback(tempDir)
-    fs.rmSync(tempDir, { recursive : true, force : true});
+    fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
-describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
-    test('empty graph', async () => {    
+describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
+    test('empty graph', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
@@ -57,15 +57,15 @@ describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
         });
     });
 
-    test('single insert', async () => {    
+    test('single insert', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             expect(await graph.count()).toBe(0);
-            console.log(await graph.getIPLD({ toString : () => ':a' }, ''));
+            console.log(await graph.getIPLD(':a'));
             await graph.insert(makeTriple(':a', ':b', ':c'));
             expect(await graph.count()).toBe(1);
-            console.log(await graph.getIPLD({ toString : () => ':a' }, ''));
+            console.log(await graph.getIPLD(':a'));
 
             const query = `
             SELECT ?s ?p ?o
@@ -73,21 +73,21 @@ describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([{ '?s' : ':a', '?p' : ':b', '?o' : ':c' }]);
+            expect(results).toEqual([{ '?s': ':a', '?p': ':b', '?o': ':c' }]);
         });
     });
 
-    test('multiple inserts', async () => {   
-        await withTempDir(tempContainingDir, async (tempDir) => { 
+    test('multiple inserts', async () => {
+        await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             expect(await graph.count()).toBe(0);
             await graph.insert(makeTriple('https://mizu.io/a', 'https://mizu.io/b', 'https://mizu.io/c'));
             expect(await graph.count()).toBe(1);
-            console.log(await graph.getIPLD({ toString : () => 'a' }, ''));
+            console.log(await graph.getIPLD('a'));
             await graph.insert(makeTriple('https://mizu.io/d', 'https://mizu.io/e', 'https://mizu.io/f'));
             expect(await graph.count()).toBe(2);
-            console.log(await graph.getIPLD({ toString : () => 'a' }, ''));
+            console.log(await graph.getIPLD('a'));
 
             const query = `
             SELECT ?s
@@ -95,7 +95,7 @@ describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([{ '?s' : 'https://mizu.io/a' }, { '?s' : 'https://mizu.io/d'}]);
+            expect(results).toEqual([{ '?s': 'https://mizu.io/a' }, { '?s': 'https://mizu.io/d' }]);
 
             const query2 = `
             SELECT *
@@ -107,8 +107,8 @@ describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
         });
     });
 
-    test('inserting linked data', async () => {   
-        await withTempDir(tempContainingDir, async (tempDir) => { 
+    test('inserting linked data', async () => {
+        await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             expect(await graph.count()).toBe(0);
@@ -123,7 +123,7 @@ describe.each([ MockLinkedDataGraph ])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([{ '?s' : 'a' }, { '?s' : 'd'}]);
+            expect(results).toEqual([{ '?s': 'a' }, { '?s': 'd' }]);
         });
     });
 });

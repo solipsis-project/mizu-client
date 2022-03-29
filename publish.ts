@@ -1,8 +1,9 @@
 import { getStorage, GraphClass, Triple } from './graph'
 import { create, IPFSHTTPClient, CID } from 'ipfs-http-client'
-import { IPLDObject, LinkedDataGraph } from './graph/common';
+import { IPLDObject, IRI, LinkedDataGraph } from './graph/common';
 import { getInput } from './input';
 import { InputType, PublishOptions } from './cli/publish/options';
+import normalizePath from './normalizePath';
 
 
 export async function publishCommand(options: PublishOptions) {
@@ -25,7 +26,8 @@ export async function publishCommand(options: PublishOptions) {
 
 
 export async function publish(graph: LinkedDataGraph, ipfs_client: IPFSHTTPClient, cid: CID, dag: IPLDObject) {
-    await graph.putIPLD(cid, dag);
+    const root = `${IRI}${normalizePath(`${cid.toString()}/`)}`
+    await graph.putIPLD(root, dag);
     console.log("Result");
-    console.log(await graph.getIPLD(cid, ''));
+    console.log(await graph.getIPLD(root));
 }
