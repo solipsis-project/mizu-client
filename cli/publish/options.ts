@@ -1,6 +1,6 @@
-import { CommandOptions, InputOption } from "../options";
+import { BaseCommandOptions, InputOption } from "../options";
 
-export type PublishOptions = CommandOptions & {
+export type PublishOptions = BaseCommandOptions & {
     input: InputOption,
 }
 
