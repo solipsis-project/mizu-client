@@ -12,7 +12,8 @@ export async function viewCommand(options: ViewOptions) {
 
     const GraphClass = getStorage(options.storageType);
     const graph = new GraphClass(options.databasePath);
+    console.log(await graph.getIPLD(options.path));
+    // This only gets records where this is a subject. If it's a value with no further keys, nothing gets returned.
+    // Also what if there's multiple possible values in the datastore: this would return an array, right?
     // const cid = (options.input.type == InputType.Cid) ? CID.parse(options.input.cid) : await ipfs_client.dag.put(dag);
-
-    // TODO: Have mock persist between invocations.
 }
