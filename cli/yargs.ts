@@ -3,21 +3,23 @@ import { hideBin } from "yargs/helpers";
 import Flags, { StorageChoices } from "./flags";
 import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options";
 
-const baseCommand = yargs(hideBin(process.argv))
-    .option(Flags.STORAGE, {
-        choices: StorageChoices,
-        demandOption: true
-    })
-    .option(Flags.DATABASE_PATH, {
-        type: "string",
-        demandOption: true
-    })
-    .option(Flags.IPFS_URL, {
-        type: "string",
-        default: "http://localhost:5001/api/v0"
-    });
+function baseCommand() {
+    return yargs(hideBin(process.argv))
+        .option(Flags.STORAGE, {
+            choices: StorageChoices,
+            demandOption: true
+        })
+        .option(Flags.DATABASE_PATH, {
+            type: "string",
+            demandOption: true
+        })
+        .option(Flags.IPFS_URL, {
+            type: "string",
+            default: "http://localhost:5001/api/v0"
+        });
+}
 
-export type BaseCommand = typeof baseCommand;
+export type BaseCommand = ReturnType<typeof baseCommand>;
 
 export interface Command<Options> {
     apply(yargs: BaseCommand, callback: (options: Options) => any): BaseCommand;
@@ -32,7 +34,9 @@ class YargsFluentInjector {
     }
 }
 
-export const baseYargsInjector = new YargsFluentInjector(baseCommand);
+export function baseYargsInjector(config: any) {
+    return new YargsFluentInjector(baseCommand().config(config));
+}
 
 export function addInputParameters(yarg: BaseCommand) {
     return yarg.boolean(Flags.INPUT_STDIN)
