@@ -2,9 +2,10 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import Flags, { StorageChoices } from "./flags";
 import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options";
+import YargsCommandConfig from "yargs-command-config";
 
-function baseCommand() {
-    return yargs(hideBin(process.argv))
+function baseCommand(yargs: YargsType) {
+    return yargs
         .option(Flags.STORAGE, {
             choices: StorageChoices,
             demandOption: true
@@ -21,11 +22,13 @@ function baseCommand() {
 
 export type BaseCommand = ReturnType<typeof baseCommand>;
 
+type YargsType = typeof yargs;
+
 export interface Command<Options> {
     apply(yargs: BaseCommand, callback: (options: Options) => any): BaseCommand;
 }
 
-class YargsFluentInjector {
+export class YargsFluentInjector {
 
     constructor(public readonly yargsObject: BaseCommand) { }
 
@@ -34,8 +37,13 @@ class YargsFluentInjector {
     }
 }
 
-export function baseYargsInjector(config: any) {
-    return new YargsFluentInjector(baseCommand().config(config));
+export function baseYargsInjector(configPath: string, config: any, callback: (yargs: YargsFluentInjector) => YargsFluentInjector) {
+    return yargs.command(YargsCommandConfig({ file: configPath }))
+        .command('$0', '', (yargs: YargsType) => {
+            return callback(new YargsFluentInjector(baseCommand(yargs).config(config)))
+        },
+            async (argv) => { }
+        );
 }
 
 export function addInputParameters(yarg: BaseCommand) {
