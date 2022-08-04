@@ -1,11 +1,15 @@
 import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import Flags, { StorageChoices } from "./flags";
+import Flags, { LogLevelChoices, StorageChoices } from "./flags";
 import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options";
 import YargsCommandConfig from "yargs-command-config";
+import * as Logger from '../logger';
 
 function baseCommand(yargs: YargsType) {
     return yargs
+        .option(Flags.LOG_LEVEL, {
+            choices: LogLevelChoices,
+            default: Flags.LOG_INFO
+        })
         .option(Flags.STORAGE, {
             choices: StorageChoices,
             demandOption: true
@@ -81,8 +85,27 @@ export function getInputOptions(argv): InputOption {
     return { type: InputType.Cid, cid: argv[Flags.INPUT_CID] };
 };
 
+function getMinimumLogLevel(argv): Logger.LogLevel {
+    switch (argv[Flags.LOG_LEVEL]) {
+        case Flags.LOG_DEBUG: {
+            return Logger.LogLevel.DEBUG;
+        }
+        case Flags.LOG_VERBOSE: {
+            return Logger.LogLevel.VERBOSE;
+        }
+        case Flags.LOG_INFO: {
+            return Logger.LogLevel.INFO;
+        }
+        case Flags.LOG_WARNING: {
+            return Logger.LogLevel.WARN;
+        }
+    }
+    return Logger.LogLevel.ERROR;
+}
+
 export function getBaseCommandOptions(argv): BaseCommandOptions {
     return {
+        minimumLogLevel: getMinimumLogLevel(argv),
         storageType: getStorageOptions(argv),
         databasePath: argv[Flags.DATABASE_PATH],
         ipfsOptions: argv[Flags.IPFS_URL],

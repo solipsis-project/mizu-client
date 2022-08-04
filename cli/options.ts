@@ -1,3 +1,5 @@
+import * as Logger from '../logger'
+
 export type IPFSOptions = {
     url: string,
 }
@@ -11,6 +13,7 @@ export type InputOption =
 export enum StorageType { N3, LevelGraph, Mock }
 
 export type BaseCommandOptions = {
+    minimumLogLevel: Logger.LogLevel,
     storageType: StorageType,
     databasePath: string,
     ipfsOptions: IPFSOptions,

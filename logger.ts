@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-enum LogLevel {
+export enum LogLevel {
     DEBUG,
     VERBOSE,
     INFO,

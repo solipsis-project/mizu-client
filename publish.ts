@@ -8,6 +8,7 @@ import * as Logger from './logger';
 
 
 export async function publishCommand(options: PublishOptions) {
+    Logger.setMinimumLogLevel(options.minimumLogLevel);
     const input = options.input;
     const ipfs_client = await create({ url: options.ipfsOptions.url });
     const dag = await getInput(input, ipfs_client);
