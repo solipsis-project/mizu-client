@@ -9,6 +9,7 @@ import dagToTriples from './dagToTriples';
 import triplesToDag from './triplesToDag';
 import { CID } from 'multiformats/cid';
 import normalizePath from '../normalizePath';
+import * as Logger from '../logger';
 
 // The simplest possible implementation of a triplestore and linked data graph.
 // Useful for tests.
@@ -80,7 +81,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
   async putIPLD(root: string, dag: IPLDObject): Promise<void> {
     for await (const triple of dagToTriples(root, dag, false)) {
-      console.log(triple);
+      Logger.debug((logger) => logger("added triple: ", triple));
       await this.insert(triple);
     }
   }

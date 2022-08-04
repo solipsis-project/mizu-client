@@ -4,6 +4,7 @@ import { IPLDObject, IRI, LinkedDataGraph } from './graph/common';
 import { getInput } from './input';
 import { InputType, PublishOptions } from './cli/publish/options';
 import normalizePath from './normalizePath';
+import * as Logger from './logger';
 
 
 export async function publishCommand(options: PublishOptions) {
@@ -14,13 +15,13 @@ export async function publishCommand(options: PublishOptions) {
     const graph = new GraphClass(options.databasePath);
     const cid = (input.type == InputType.Cid) ? CID.parse(input.cid) : await ipfs_client.dag.put(dag);
     ipfs_client.pin.add(cid);
-    console.log(`CID: ${cid.toString()}`);
-    console.log(dag);
+    Logger.debug((logger) => logger("message: ", dag));
     if (!(dag instanceof Object)) {
         throw "Published data is a primitive, not linked data.";
     }
     await publish(graph, ipfs_client, cid, dag);
     graph.save(options.databasePath);
+    console.log(cid.toString());
 }
 
 
@@ -28,6 +29,4 @@ export async function publishCommand(options: PublishOptions) {
 export async function publish(graph: LinkedDataGraph, ipfs_client: IPFSHTTPClient, cid: CID, dag: IPLDObject) {
     const root = `${IRI}${normalizePath(`${cid.toString()}/`)}`
     await graph.putIPLD(root, dag);
-    console.log("Result");
-    console.log(await graph.getIPLD(root));
 }
