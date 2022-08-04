@@ -9,6 +9,7 @@
     "start": "tsc && node dist/index.js",
     "test": "jest"
   },
+  "bin": "dist/index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",

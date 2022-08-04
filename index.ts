@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as PublishCommand from './cli/publish'
 import * as QueryCommand from './cli/query'
 import * as ViewCommand from './cli/view'
