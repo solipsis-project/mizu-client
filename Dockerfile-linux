@@ -1,6 +1,6 @@
 
 # BASE IMAGE
-FROM ubuntu:latest
+FROM node:16
 
 # just get the package*.json files and run npm install. 
 # This is helpful for using build cache in subseqent build runs if caching is used when building 
