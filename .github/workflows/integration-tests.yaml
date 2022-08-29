@@ -1,7 +1,7 @@
 name: integration-tests
 on:
   push:
-    branches: [ dockerfile, main ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 jobs:
