@@ -1,0 +1,20 @@
+
+# BASE IMAGE
+FROM ubuntu:latest
+
+# just get the package*.json files and run npm install. 
+# This is helpful for using build cache in subseqent build runs if caching is used when building 
+COPY package*.json ./
+RUN npm install
+
+# copy all app code
+COPY . ./
+
+# build typescript to javascript
+npm run build
+
+#global installation of mizu
+RUN npm install -g
+
+# check if mizu is installed and working fine
+RUN mizu --version
