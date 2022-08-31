@@ -18,3 +18,6 @@ RUN npm install -g
 
 # check if mizu is installed and working fine
 RUN mizu --version
+
+# default command executed when user runs the container without any command
+CMD ["mizu", "--help" ]

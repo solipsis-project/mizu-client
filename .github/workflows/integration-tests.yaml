@@ -25,7 +25,7 @@ jobs:
       #   with:
       #     username: ${{ secrets.DOCKERHUB_USERNAME }}
       #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
+      - name: Build
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: docker/build-push-action@v3
         with:
@@ -55,4 +55,4 @@ jobs:
       - name: Regular cleanup of caches used or created in above steps (important)
         run: |
           echo "Yet to implement"
-          echo "Reason: Total Cache sizeis limited to 10GB per repository in github at present."
+          echo "Reason: Total Cache size is limited to 10GB per repository in github at present."
