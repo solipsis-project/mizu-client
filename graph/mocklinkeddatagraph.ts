@@ -12,7 +12,7 @@ import normalizePath from '../normalizePath';
 import * as Logger from '../logger';
 
 // The simplest possible implementation of a triplestore and linked data graph.
-// Useful for tests.
+// Useful for tests. Don't use this in production, obviously.
 
 function isVariable(name: string): boolean {
   return name.startsWith('?');
@@ -127,10 +127,12 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
   async load(dbPath: string): Promise<void> {
     // This won't handle unescaped commas in data, but it's good enough for now.
     const content = fs.readFileSync(dbPath).toString('utf-8')
+    var lineNumber = 0;
     content.split('\n').forEach((line) => {
-      const terms = line.split(',');
+      lineNumber++;
+      const terms = line.split(new RegExp('(?<!\\\\),'));
       if (terms.length != 3) {
-        throw "Error parsing input file";
+        throw `Error parsing mock database ${dbPath}: invalid line at line ${lineNumber}: expected 3 terms, found ${terms.length}.\n${line}`;
       }
       this.insert(makeTriple(terms[0], terms[1], terms[2]));
     })
@@ -142,7 +144,11 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
       fs.copyFileSync(dbPath, dbPath + '.bak');
     }
     var fileContent = Array.from(this.triples).map((triple) =>
-      [triple.subject, triple.predicate, triple.object].join(',')
+      [
+        triple.subject.replace(",", "\\,"),
+        triple.predicate.replace(",", "\\,"),
+        triple.object.replace(",", "\\,")
+      ].join(',')
     ).join('\n');
     const dbFile = fs.writeFileSync(dbPath, fileContent);
   }
