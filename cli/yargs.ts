@@ -56,13 +56,7 @@ export function addInputParameters(yarg: BaseCommand) {
         .string(Flags.INPUT_FILE)
         .boolean(Flags.INPUT_STDIN)
         .conflicts(Flags.INPUT_FILE, [Flags.INPUT_STDIN, Flags.INPUT_CID])
-        .conflicts(Flags.INPUT_STDIN, [Flags.INPUT_CID])
-        .check((argv, aliases) => {
-            if ((!argv[Flags.INPUT_FILE]) && (!argv[Flags.INPUT_STDIN]) && (!argv[Flags.INPUT_CID])) {
-                throw `Exactly one of --${Flags.INPUT_FILE}, ${Flags.INPUT_STDIN}, and --${Flags.INPUT_CID} must be provided.`;
-            }
-            return true;
-        });
+        .conflicts(Flags.INPUT_STDIN, [Flags.INPUT_CID]);
 }
 
 export function getStorageOptions(argv): StorageType {
@@ -79,10 +73,12 @@ export function getInputOptions(argv): InputOption {
     if (argv[Flags.INPUT_FILE]) {
         return { type: InputType.File, path: argv[Flags.INPUT_FILE] };
     };
-    if (argv[Flags.INPUT_STDIN]) {
-        return { type: InputType.Std };
+    if (argv[Flags.INPUT_CID]) {
+        return { type: InputType.Cid, cid: argv[Flags.INPUT_CID] };
     }
-    return { type: InputType.Cid, cid: argv[Flags.INPUT_CID] };
+    // If neither --cid or --file was provided, default to stdin.
+    return { type: InputType.Std };
+
 };
 
 function getMinimumLogLevel(argv): Logger.LogLevel {
