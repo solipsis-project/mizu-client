@@ -3,6 +3,7 @@
 import * as PublishCommand from './cli/publish'
 import * as QueryCommand from './cli/query'
 import * as ViewCommand from './cli/view'
+import * as Logger from './logger'
 import { baseYargsInjector, YargsFluentInjector } from './cli/yargs'
 import { publishCommand } from './publish';
 import { queryCommand } from './query';
@@ -42,7 +43,9 @@ async function main() {
     }).strict().parse(hideBin(process.argv));
 }
 
-main();
+main().catch(reason => {
+    Logger.error(reason);
+});
 
 
 
