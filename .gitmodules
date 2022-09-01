@@ -1,0 +1,3 @@
+[submodule "mizu-documentation"]
+	path = mizu-documentation
+	url = https://github.com/solipsis-project/mizu-documentation
