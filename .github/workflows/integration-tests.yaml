@@ -50,6 +50,10 @@ jobs:
           npm run build
           npm install -g
           mizu --version
+      - name: Run powershell integration tests
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          npm run ci-test
 
 
       - name: Regular cleanup of caches used or created in above steps (important)
