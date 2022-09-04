@@ -33,7 +33,7 @@ const FAILURE_TEMPLATE = (errorMessage: string) => `\
 
 const POSTAMBLE = (inputPath: string) => ` \
 if ($FailedTests -gt 0) {\n\
-    echo "$FailedTests/$TotalTests examples failed in ${inputPath}; see above for more information."\n\
+    throw "$FailedTests/$TotalTests examples failed in ${inputPath}; see above for more information."\n\
 } else {\n\
     echo "Verified all $TotalTests examples in ${inputPath}."\n\
 }\
