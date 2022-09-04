@@ -28,6 +28,7 @@ async function main() {
             type: "string",
             default: DEFAULT_CONFIG_LOCATION
         })
+        .help(false) // By suppressing --help here, we make sure that --help is caught by the subsequent yargs run.
         .parse();
 
     const configFile = argsWithoutConfig[CONFIG_KEY];
@@ -44,7 +45,7 @@ async function main() {
 }
 
 main().catch(reason => {
-    Logger.error(reason);
+    Logger.error((logger) => logger(reason));
 });
 
 
