@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/index.js",
-    "test": "jest"
+    "test": "jest",
+    "ci-test": "node dist/build_documentation_tests.js && powershell tests/run_generated_powershell_tests.ps1"
   },
   "bin": "dist/index.js",
   "keywords": [],
