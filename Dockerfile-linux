@@ -10,6 +10,10 @@ RUN npm install
 # copy all app code
 COPY . ./
 
+# Add default .mizurc config to the home directory
+# TODO(https://github.com/solipsis-project/mizu-client/issues/17): Improve handling of config files
+RUN echo '{"storage":"mock","db":"/test.db"}' > /root/.mizurc
+
 # build typescript to javascript
 RUN npm run build
 
