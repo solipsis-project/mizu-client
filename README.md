@@ -12,5 +12,7 @@ Discord: https://discord.gg/kEW32kWsaA
 Build instructions:
 
 1. Clone this repository and its submodules (`git clone --recurse-submodules https://github.com/solipsis-project/mizu-client`)
-2a. Build the docker container (`DOCKER_BUILDKIT=1 docker build -f ./Dockerfile-linux --tag mizu`)
+
+2a. Build the docker container (`DOCKER_BUILDKIT=1 docker build -f ./Dockerfile-linux --tag mizu .`)
+
 2b. Alternatively, build the node package (`npm install && npm run build && npm install -g`)
