@@ -4,12 +4,12 @@ import { Graph, ExecutionContext } from 'sparql-engine'
 import fs from 'fs';
 import util from 'util';
 
-import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common';
-import dagToTriples from './dagToTriples';
-import triplesToDag from './triplesToDag';
+import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common.js';
+import dagToTriples from './dagToTriples.js';
+import triplesToDag from './triplesToDag.js';
 import { CID } from 'multiformats/cid';
-import normalizePath from '../normalizePath';
-import * as Logger from '../logger';
+import normalizePath from '../normalizePath.js';
+import * as Logger from '../logger.js';
 
 // The simplest possible implementation of a triplestore and linked data graph.
 // Useful for tests. Don't use this in production, obviously.

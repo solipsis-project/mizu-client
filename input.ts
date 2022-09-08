@@ -1,8 +1,8 @@
 import { CID, IPFSHTTPClient } from 'ipfs-http-client';
 import fs from 'fs';
 
-import { IPLDValue } from './graph/common';
-import { InputOption, InputType } from './cli/options';
+import { IPLDValue } from './graph/common.js';
+import { InputOption, InputType } from './cli/options.js';
 
 
 export async function getInput(input: InputOption, ipfs_client: IPFSHTTPClient): Promise<IPLDValue> {

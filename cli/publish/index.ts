@@ -1,7 +1,7 @@
-import { BaseCommandOptions } from "../options";
-import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs";
-import Flags from "./flags";
-import { PublishOptions } from "./options";
+import { BaseCommandOptions } from "../options.js";
+import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs.js";
+import Flags from "./flags.js";
+import { PublishOptions } from "./options.js";
 
 export const command = 'publish'
 export const desc = 'publish a new message to this node'

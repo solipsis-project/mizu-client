@@ -1,10 +1,10 @@
-import { getStorage, GraphClass, Triple } from './graph'
+import { getStorage, GraphClass, Triple } from './graph/index.js'
 import { create, IPFSHTTPClient, CID } from 'ipfs-http-client'
-import { IPLDObject, IRI, LinkedDataGraph } from './graph/common';
-import { getInput } from './input';
-import { InputType, PublishOptions } from './cli/publish/options';
-import normalizePath from './normalizePath';
-import * as Logger from './logger';
+import { IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
+import { getInput } from './input.js';
+import { InputType, PublishOptions } from './cli/publish/options.js';
+import normalizePath from './normalizePath.js';
+import * as Logger from './logger.js';
 
 
 export async function publishCommand(options: PublishOptions) {

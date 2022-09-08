@@ -1,5 +1,5 @@
 import { ExecutionContext, Graph, HashMapDataset, PipelineStage, PlanBuilder } from "sparql-engine";
-import { QueryOutput } from "sparql-engine/dist/engine/plan-builder";
+import { QueryOutput } from "sparql-engine/dist/engine/plan-builder.js";
 
 export function dump(graph : Graph) {
     // TODO: Verify that db exists?

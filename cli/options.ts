@@ -1,4 +1,4 @@
-import * as Logger from '../logger'
+import * as Logger from '../logger.js'
 
 export type IPFSOptions = {
     url: string,

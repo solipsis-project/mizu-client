@@ -2,13 +2,14 @@
 
 import { BindingBase, Graph, Pipeline, ExecutionContext, StreamPipelineInput, Bindings, PipelineInput, PipelineStage } from 'sparql-engine'
 import level from 'level'
-const levelgraph = require('levelgraph')
+//const levelgraph = require('levelgraph')
+import levelgraph from 'levelgraph'
 import jsonld from 'levelgraph-jsonld'
 
-import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common'
+import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common.js'
 import { CID } from 'multiformats/cid'
 import { Algebra } from 'sparqljs'
-import { VectorStage } from 'sparql-engine/dist/engine/pipeline/vector-pipeline'
+import { VectorStage } from 'sparql-engine/dist/engine/pipeline/vector-pipeline.js'
 
 // Based on sparql-engine/blob/master/examples/levelgraph.js
 

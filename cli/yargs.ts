@@ -1,11 +1,11 @@
 import yargs from "yargs";
-import Flags, { LogLevelChoices, StorageChoices } from "./flags";
-import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options";
+import Flags, { LogLevelChoices, StorageChoices } from "./flags.js";
+import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options.js";
 import YargsCommandConfig from "yargs-command-config";
-import * as Logger from '../logger';
+import * as Logger from '../logger.js';
 
-function baseCommand(yargs: YargsType) {
-    return yargs
+function baseCommand(_yargs: YargsType) {
+    return _yargs
         .option(Flags.LOG_LEVEL, {
             choices: LogLevelChoices,
             default: Flags.LOG_INFO
@@ -26,7 +26,7 @@ function baseCommand(yargs: YargsType) {
 
 export type BaseCommand = ReturnType<typeof baseCommand>;
 
-type YargsType = typeof yargs;
+type YargsType = ReturnType<typeof yargs>;
 
 export interface Command<Options> {
     apply(yargs: BaseCommand, callback: (options: Options) => any): BaseCommand;
@@ -42,7 +42,7 @@ export class YargsFluentInjector {
 }
 
 export function baseYargsInjector(configPath: string, config: any, callback: (yargs: YargsFluentInjector) => YargsFluentInjector) {
-    return yargs.command(YargsCommandConfig({ file: configPath }))
+    return yargs().command(YargsCommandConfig({ file: configPath }))
         .command('$0', '', (yargs: YargsType) => {
             return callback(new YargsFluentInjector(baseCommand(yargs).config(config)))
         },
