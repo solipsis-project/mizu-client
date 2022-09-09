@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import Flags, { LogLevelChoices, StorageChoices } from "./flags.js";
-import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options.js";
+import { BaseCommandOptions, InputOption, InputType, StorageType, IPFSOptions, IPFSMode } from "./options.js";
 import YargsCommandConfig from "yargs-command-config";
 import * as Logger from '../logger.js';
 
@@ -17,6 +17,9 @@ function baseCommand(_yargs: YargsType) {
         .option(Flags.DATABASE_PATH, {
             type: "string",
             demandOption: true
+        })
+        .option(Flags.IPFS_INTERNAL_NODE, {
+            type: "boolean",
         })
         .option(Flags.IPFS_URL, {
             type: "string",
@@ -81,6 +84,13 @@ export function getInputOptions(argv): InputOption {
 
 };
 
+export function getIpfsOptions(argv): IPFSOptions {
+    if (argv[Flags.IPFS_INTERNAL_NODE]) {
+        return { type: IPFSMode.Internal };
+    };
+    return { type: IPFSMode.Http, url: argv[Flags.IPFS_URL] };
+};
+
 function getMinimumLogLevel(argv): Logger.LogLevel {
     switch (argv[Flags.LOG_LEVEL]) {
         case Flags.LOG_DEBUG: {
@@ -104,6 +114,6 @@ export function getBaseCommandOptions(argv): BaseCommandOptions {
         minimumLogLevel: getMinimumLogLevel(argv),
         storageType: getStorageOptions(argv),
         databasePath: argv[Flags.DATABASE_PATH],
-        ipfsOptions: argv[Flags.IPFS_URL],
+        ipfsOptions: getIpfsOptions(argv),
     }
 }
