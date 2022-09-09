@@ -1,11 +1,11 @@
-import { CID, IPFSHTTPClient } from 'ipfs-http-client';
 import fs from 'fs';
-
+import type {IPFS} from 'ipfs-core-types'
 import { IPLDValue } from './graph/common.js';
 import { InputOption, InputType } from './cli/options.js';
+import { CID } from 'multiformats/cid'
 
 
-export async function getInput(input: InputOption, ipfs_client: IPFSHTTPClient): Promise<IPLDValue> {
+export async function getInput(input: InputOption, ipfs_client: IPFS): Promise<IPLDValue> {
     switch (input.type) {
         case InputType.File:
             return fs.promises.readFile(input.path).then((buffer) => JSON.parse(buffer.toString()));

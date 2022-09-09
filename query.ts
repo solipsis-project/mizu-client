@@ -1,13 +1,13 @@
 import { getStorage, GraphClass, Triple } from './graph/index.js'
-import { create, IPFSHTTPClient, CID } from 'ipfs-http-client'
 import { IPLD, LinkedDataGraph, resolveQuery } from './graph/common.js';
 import { getInput } from './input.js';
 import { InputType, PublishOptions } from './cli/publish/options.js';
 import { QueryOptions } from './cli/query/options.js';
-
+import { CID } from 'multiformats/cid'
+import { create } from './ipfs.js';
 
 export async function queryCommand(options: QueryOptions) {
-    const ipfs_client = await create({ url: options.ipfsOptions.url });
+    const ipfs_client = await create(options.ipfsOptions);
     const query = await getInput(options.input, ipfs_client);
 
     if (!(typeof query === "string")) {

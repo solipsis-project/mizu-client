@@ -1,16 +1,17 @@
-import { getStorage, GraphClass, Triple } from './graph/index.js'
-import { create, IPFSHTTPClient, CID } from 'ipfs-http-client'
-import { IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
-import { getInput } from './input.js';
-import { InputType, PublishOptions } from './cli/publish/options.js';
-import normalizePath from './normalizePath.js';
-import * as Logger from './logger.js';
-
+import { getStorage, GraphClass, Triple } from './graph'
+import { CID } from 'multiformats/cid'
+import { IPLDObject, IRI, LinkedDataGraph } from './graph/common';
+import { getInput } from './input';
+import { InputType, PublishOptions } from './cli/publish/options';
+import normalizePath from './normalizePath';
+import * as Logger from './logger';
+import { create } from './ipfs';
+import type { IPFS } from 'ipfs-core-types'
 
 export async function publishCommand(options: PublishOptions) {
     Logger.setMinimumLogLevel(options.minimumLogLevel);
     const input = options.input;
-    const ipfs_client = await create({ url: options.ipfsOptions.url });
+    const ipfs_client = await create(options.ipfsOptions);
     const dag = await getInput(input, ipfs_client);
     const GraphClass = getStorage(options.storageType);
     const graph = new GraphClass(options.databasePath);
@@ -27,7 +28,7 @@ export async function publishCommand(options: PublishOptions) {
 
 
 
-export async function publish(graph: LinkedDataGraph, ipfs_client: IPFSHTTPClient, cid: CID, dag: IPLDObject) {
+export async function publish(graph: LinkedDataGraph, ipfs_client: IPFS, cid: CID, dag: IPLDObject) {
     const root = `${IRI}${normalizePath(`${cid.toString()}/`)}`
     await graph.putIPLD(root, dag);
 }
