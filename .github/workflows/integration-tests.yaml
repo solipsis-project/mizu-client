@@ -15,7 +15,7 @@ jobs:
       - name: Checkout the current branch of mizu-client repo here.
         uses: actions/checkout@v3
 
-
+      # By running in a docker container, we additionally verify the Dockerfile
       - name: Set up Docker Buildx
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: docker/setup-buildx-action@v2
@@ -25,7 +25,7 @@ jobs:
       #   with:
       #     username: ${{ secrets.DOCKERHUB_USERNAME }}
       #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build
+      - name: Build Docker Container
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: docker/build-push-action@v3
         with:
@@ -50,10 +50,10 @@ jobs:
           npm run build
           npm install -g
           mizu --version
-      - name: Run powershell integration tests
+      - name: Run all tests
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          npm run ci-test
+          npm run test
 
 
       - name: Regular cleanup of caches used or created in above steps (important)

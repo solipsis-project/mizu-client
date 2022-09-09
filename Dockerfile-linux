@@ -39,4 +39,4 @@ COPY --from=powershell /powershell /powershell
 
 RUN ln -s /powershell/pwsh /usr/bin/powershell
 
-CMD ["npm", "run", "ci-test"]
+CMD ["npm", "run", "test"]
