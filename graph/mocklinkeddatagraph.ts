@@ -131,6 +131,10 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     content.split('\n').forEach((line) => {
       lineNumber++;
       const terms = line.split(new RegExp('(?<!\\\\),'));
+      if (terms.length == 0) {
+        // Allow empty lines to ensure that we correctly parse a db with no records.
+        return;
+      }
       if (terms.length != 3) {
         throw `Error parsing mock database ${dbPath}: invalid line at line ${lineNumber}: expected 3 terms, found ${terms.length}.\n${line}`;
       }
