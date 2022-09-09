@@ -1,11 +1,11 @@
-import { getStorage, GraphClass, Triple } from './graph'
+import { getStorage, GraphClass, Triple } from './graph/index.js'
 import { CID } from 'multiformats/cid'
-import { IPLDObject, IRI, LinkedDataGraph } from './graph/common';
-import { getInput } from './input';
-import { InputType, PublishOptions } from './cli/publish/options';
-import normalizePath from './normalizePath';
-import * as Logger from './logger';
-import { create } from './ipfs';
+import { IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
+import { getInput } from './input.js';
+import { InputType, PublishOptions } from './cli/publish/options.js';
+import normalizePath from './normalizePath.js';
+import * as Logger from './logger.js';
+import { create } from './ipfs.js';
 import type { IPFS } from 'ipfs-core-types'
 
 export async function publishCommand(options: PublishOptions) {
