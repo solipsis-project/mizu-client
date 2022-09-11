@@ -7,7 +7,8 @@ messageRouter.get("/:cid/:path", (req, res) => {
 
     console.log({
         cid: req.params.cid,
-        path: req.params.path
+        path: req.params.path,
+        queryParameters: req.query
     })
 
     
