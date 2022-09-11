@@ -1,2 +1,4 @@
 .github
 Dockerfile-linux
+node_modules/
+dist/
