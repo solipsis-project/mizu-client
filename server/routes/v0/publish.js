@@ -22,3 +22,8 @@ publishRouter.post("/", (req, res)=>{
         }
     })
 })
+
+
+module.exports = {
+    publishRouter
+}
