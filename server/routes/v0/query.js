@@ -1,6 +1,6 @@
 const express = require("express");
 const queryRouter = express.Router();
-let queryCommand = require("../../../query").queryCommand
+// let queryCommand = require("../../../query").queryCommand
 
 queryRouter.post("/", (req,res)=>{
 
@@ -8,16 +8,24 @@ queryRouter.post("/", (req,res)=>{
     console.log(query)
     res.send("query received. processing it.");
 
-    let queryCommandOptions = {
-        input: query,
-        ipfsOptions: {},
-        storageType: "n3",
-        databasePath: "",
-        // any other options if required //
-    }
+    // let queryCommandOptions = {
+    //     input: query,
+    //     ipfsOptions: {},
+    //     storageType: "n3",
+    //     databasePath: "",
+    //     // any other options if required //
+    // }
 
     // perform query
-    // queryCommand(queryCommandOptions);
+    //const queryResult = queryCommand(queryCommandOptions);
+
+    res.send({
+        statusCode:200,
+        data:{
+            //queryResult:queryResult,
+            status: "ok"
+        },
+    });
 })
 
 module.exports = {
