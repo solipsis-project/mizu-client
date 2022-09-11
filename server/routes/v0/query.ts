@@ -1,5 +1,5 @@
-const express = require("express");
-const queryRouter = express.Router();
+import express from "express";
+export const queryRouter = express.Router();
 // let queryCommand = require("../../../query").queryCommand
 
 queryRouter.post("/", (req,res)=>{
@@ -28,6 +28,6 @@ queryRouter.post("/", (req,res)=>{
     });
 })
 
-module.exports = {
-    queryRouter
-}
+// module.exports = {
+//     queryRouter
+// }

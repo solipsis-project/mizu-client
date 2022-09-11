@@ -1,5 +1,5 @@
-const express = require("express");
-const publishRouter = express.Router();
+import express from "express";
+export const publishRouter = express.Router();
 // let publishCommand = require("../../../publish").publishCommand
 
 publishRouter.post("/", (req, res)=>{
@@ -24,6 +24,6 @@ publishRouter.post("/", (req, res)=>{
 })
 
 
-module.exports = {
-    publishRouter
-}
+// module.exports = {
+//     publishRouter
+// }

@@ -6,8 +6,8 @@
     ".": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc --Allowjs --Checkjs",
-    "start": "tsc --Allowjs --Checkjs && node dist/index.js",
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
     "startServer" : "node dist/server/server.js",
     "test": "jest"
   },

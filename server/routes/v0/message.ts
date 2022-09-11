@@ -1,5 +1,5 @@
-const express = require("express");
-const messageRouter = express.Router();
+import express from "express";
+export const messageRouter = express.Router();
 // const exec = require("child_process").exec;
 // let viewMessage = require("../../../view").viewCommand
 
@@ -43,6 +43,6 @@ messageRouter.get("/:cid/:path", (req, res) => {
 
 
 
-module.exports = {
-    messageRouter
-}
+// module.exports = {
+//     messageRouter
+// }
