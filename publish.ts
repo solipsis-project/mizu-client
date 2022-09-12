@@ -6,7 +6,6 @@ import { InputType, PublishOptions } from './cli/publish/options.js';
 import normalizePath from './normalizePath.js';
 import * as Logger from './logger.js';
 import { create } from './ipfs.js';
-import type { IPFS } from 'ipfs-core-types'
 
 export async function publishCommand(options: PublishOptions) {
     Logger.setMinimumLogLevel(options.minimumLogLevel);

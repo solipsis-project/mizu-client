@@ -1,8 +1,8 @@
 import fs from 'fs';
-import type {IPFS} from 'ipfs-core-types'
 import { IPLDValue } from './graph/common.js';
 import { InputOption, InputType } from './cli/options.js';
 import { CID } from 'multiformats/cid'
+import { IPFS } from './ipfs.js';
 
 
 export async function getInput(input: InputOption, ipfs_client: IPFS): Promise<IPLDValue> {
