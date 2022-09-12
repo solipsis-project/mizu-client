@@ -21,6 +21,7 @@ const DEFAULT_CONFIG_LOCATION = (() => {
 })();
 
 async function main() {
+    Logger.redirectLoggingFromDependencies();
     const argsWithoutConfig = await yargs()
         .option(CONFIG_KEY, {
             type: "string",
