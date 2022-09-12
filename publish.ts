@@ -21,14 +21,15 @@ export async function publishCommand(options: PublishOptions) {
     if (!(dag instanceof Object)) {
         throw "Published data is a primitive, not linked data.";
     }
-    await publish(graph, ipfs_client, cid, dag);
+    await publish(graph, cid, dag);
     graph.save(options.databasePath);
-    console.log(cid.toString());
+    Logger.consoleLog(cid.toString());
+    ipfs_client.stop();
 }
 
 
 
-export async function publish(graph: LinkedDataGraph, ipfs_client: IPFS, cid: CID, dag: IPLDObject) {
+export async function publish(graph: LinkedDataGraph, cid: CID, dag: IPLDObject) {
     const root = `${IRI}${normalizePath(`${cid.toString()}/`)}`
     await graph.putIPLD(root, dag);
 }
