@@ -63,8 +63,6 @@ async function parseInputFile(inputPath: string, outputPath: string) {
         lineNumber++;
         if (state == "awaiting_comment") {
             if (line == TEST_CASE_PREFIX) {
-                console.log(line);
-                console.log("test case matched");
                 state = "awaiting_block_start";
             }
             continue;

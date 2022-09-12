@@ -5,6 +5,7 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/index.js",
@@ -18,8 +19,11 @@
     "@types/jest": "^27.5.2",
     "@types/level": "^6.0.1",
     "@types/lodash": "^4.14.184",
+    "@types/node": "^18.7.16",
     "@types/rdf-js": "^4.0.2",
     "@types/yargs": "^17.0.12",
+    "cross-env": "^7.0.3",
+    "ipfs-core": "^0.16.0",
     "jest": "^27.5.1",
     "sparqljs-legacy-type": "^1.0.2",
     "ts-jest": "^27.1.5",
@@ -27,7 +31,8 @@
   },
   "dependencies": {
     "get-stdin": "^9.0.0",
-    "ipfs": "^0.62.3",
+    "ipfs": "^0.64.0",
+    "ipfs-core-types": "^0.12.0",
     "ipfs-http-client": "^56.0.3",
     "ipfs-utils": "^9.0.7",
     "is-ipfs": "^6.0.2",

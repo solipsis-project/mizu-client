@@ -1,5 +1,5 @@
-import { Triple } from ".";
-import { IPLD, IPLDValue } from "./common";
+import { Triple } from "./index.js";
+import { IPLD, IPLDValue } from "./common.js";
 import { inspect } from 'util';
 import _ from 'lodash';
 

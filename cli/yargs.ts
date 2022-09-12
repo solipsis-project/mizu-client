@@ -1,11 +1,11 @@
 import yargs from "yargs";
-import Flags, { LogLevelChoices, StorageChoices } from "./flags";
-import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options";
+import Flags, { LogLevelChoices, StorageChoices } from "./flags.js";
+import { BaseCommandOptions, InputOption, InputType, StorageType, IPFSOptions, IPFSMode } from "./options.js";
 import YargsCommandConfig from "yargs-command-config";
-import * as Logger from '../logger';
+import * as Logger from '../logger.js';
 
-function baseCommand(yargs: YargsType) {
-    return yargs
+function baseCommand(_yargs: YargsType) {
+    return _yargs
         .option(Flags.LOG_LEVEL, {
             choices: LogLevelChoices,
             default: Flags.LOG_INFO
@@ -18,6 +18,9 @@ function baseCommand(yargs: YargsType) {
             type: "string",
             demandOption: true
         })
+        .option(Flags.IPFS_INTERNAL_NODE, {
+            type: "boolean",
+        })
         .option(Flags.IPFS_URL, {
             type: "string",
             default: "http://localhost:5001/api/v0"
@@ -26,7 +29,7 @@ function baseCommand(yargs: YargsType) {
 
 export type BaseCommand = ReturnType<typeof baseCommand>;
 
-type YargsType = typeof yargs;
+type YargsType = ReturnType<typeof yargs>;
 
 export interface Command<Options> {
     apply(yargs: BaseCommand, callback: (options: Options) => any): BaseCommand;
@@ -42,7 +45,7 @@ export class YargsFluentInjector {
 }
 
 export function baseYargsInjector(configPath: string, config: any, callback: (yargs: YargsFluentInjector) => YargsFluentInjector) {
-    return yargs.command(YargsCommandConfig({ file: configPath }))
+    return yargs().command(YargsCommandConfig({ file: configPath }))
         .command('$0', '', (yargs: YargsType) => {
             return callback(new YargsFluentInjector(baseCommand(yargs).config(config)))
         },
@@ -81,6 +84,13 @@ export function getInputOptions(argv): InputOption {
 
 };
 
+export function getIpfsOptions(argv): IPFSOptions {
+    if (argv[Flags.IPFS_INTERNAL_NODE]) {
+        return { type: IPFSMode.Internal };
+    };
+    return { type: IPFSMode.Http, url: argv[Flags.IPFS_URL] };
+};
+
 function getMinimumLogLevel(argv): Logger.LogLevel {
     switch (argv[Flags.LOG_LEVEL]) {
         case Flags.LOG_DEBUG: {
@@ -104,6 +114,6 @@ export function getBaseCommandOptions(argv): BaseCommandOptions {
         minimumLogLevel: getMinimumLogLevel(argv),
         storageType: getStorageOptions(argv),
         databasePath: argv[Flags.DATABASE_PATH],
-        ipfsOptions: argv[Flags.IPFS_URL],
+        ipfsOptions: getIpfsOptions(argv),
     }
 }

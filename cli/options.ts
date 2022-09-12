@@ -1,9 +1,10 @@
-import * as Logger from '../logger'
+import * as Logger from '../logger.js'
 
-export type IPFSOptions = {
-    url: string,
-}
-
+export enum IPFSMode { Http, Internal };
+export type IPFSOptions =
+    | { type: IPFSMode.Http, url: string }
+    | { type: IPFSMode.Internal }
+    
 export enum InputType { File, Std, Cid };
 export type InputOption =
     | { type: InputType.File, path: string }

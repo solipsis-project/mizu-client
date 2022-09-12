@@ -1,7 +1,7 @@
-import { BaseCommandOptions, InputOption } from "../options";
+import { BaseCommandOptions, InputOption } from "../options.js";
 
 export type PublishOptions = BaseCommandOptions & {
     input: InputOption,
 }
 
-export * from "../options"
+export * from "../options.js"

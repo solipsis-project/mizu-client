@@ -22,7 +22,7 @@ COPY . ./
 
 # Add default .mizurc config to the home directory
 # TODO(https://github.com/solipsis-project/mizu-client/issues/17): Improve handling of config files
-RUN echo '{"storage":"mock","db":"/test.db"}' > /root/.mizurc
+RUN echo '{"storage":"mock","db":"/test.db","ipfs-internal":true}' > /root/.mizurc
 
 RUN npm run build
 RUN npm install -g

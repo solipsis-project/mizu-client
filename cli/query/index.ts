@@ -1,6 +1,6 @@
-import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs";
-import Flags from "./flags";
-import { BaseCommandOptions, QueryOptions } from "./options";
+import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs.js";
+import Flags from "./flags.js";
+import { BaseCommandOptions, QueryOptions } from "./options.js";
 
 export const command = 'query'
 export const desc = 'run a json-rql query on the database'

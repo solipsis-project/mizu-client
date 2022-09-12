@@ -1,4 +1,4 @@
-import BASE_FLAGS from '../flags'
+import BASE_FLAGS from '../flags.js'
 
 const ADDED_FLAGS = {
 }

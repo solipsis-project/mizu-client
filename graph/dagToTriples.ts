@@ -1,7 +1,7 @@
 // Convert the JSON DAG to a series of triples
 
 import { CID, IPFSHTTPClient } from "ipfs-http-client";
-import { IPLDObject, IPLDValue, Triple } from "./common";
+import { IPLDObject, IPLDValue, Triple } from "./common.js";
 
 async function* dagToTriplesInner(
         root_path : string,
