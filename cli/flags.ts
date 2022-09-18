@@ -10,7 +10,8 @@ const Flags = {
 
     DATABASE_PATH: "db",
 
-    IPFS_URL: 'ipfs',
+    IPFS_INTERNAL_NODE: 'ipfs-internal',
+    IPFS_URL: 'ipfs-url',
 
     LOG_LEVEL: 'log',
     LOG_DEBUG: 'debug',

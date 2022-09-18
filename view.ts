@@ -1,10 +1,10 @@
-import { getStorage, GraphClass, Triple } from './graph'
-import { create, IPFSHTTPClient, CID } from 'ipfs-http-client'
-import { IPLD, LinkedDataGraph, resolveQuery } from './graph/common';
-import { getInput } from './input';
-import { InputType, PublishOptions } from './cli/publish/options';
-import { QueryOptions } from './cli/query/options';
-import { ViewOptions } from './cli/view/options';
+import { getStorage, GraphClass, Triple } from './graph/index.js'
+import { CID } from 'multiformats/cid';
+import { IPLD, LinkedDataGraph, resolveQuery } from './graph/common.js';
+import { getInput } from './input.js';
+import { InputType, PublishOptions } from './cli/publish/options.js';
+import { QueryOptions } from './cli/query/options.js';
+import { ViewOptions } from './cli/view/options.js';
 
 
 export async function viewCommand(options: ViewOptions) {

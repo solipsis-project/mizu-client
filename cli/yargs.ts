@@ -1,11 +1,11 @@
 import yargs from "yargs";
-import Flags, { LogLevelChoices, StorageChoices } from "./flags";
-import { BaseCommandOptions, InputOption, InputType, StorageType } from "./options";
+import Flags, { LogLevelChoices, StorageChoices } from "./flags.js";
+import { BaseCommandOptions, InputOption, InputType, StorageType, IPFSOptions, IPFSMode } from "./options.js";
 import YargsCommandConfig from "yargs-command-config";
-import * as Logger from '../logger';
+import * as Logger from '../logger.js';
 
-function baseCommand(yargs: YargsType) {
-    return yargs
+function baseCommand(_yargs: YargsType) {
+    return _yargs
         .option(Flags.LOG_LEVEL, {
             choices: LogLevelChoices,
             default: Flags.LOG_INFO
@@ -18,6 +18,9 @@ function baseCommand(yargs: YargsType) {
             type: "string",
             demandOption: true
         })
+        .option(Flags.IPFS_INTERNAL_NODE, {
+            type: "boolean",
+        })
         .option(Flags.IPFS_URL, {
             type: "string",
             default: "http://localhost:5001/api/v0"
@@ -26,7 +29,7 @@ function baseCommand(yargs: YargsType) {
 
 export type BaseCommand = ReturnType<typeof baseCommand>;
 
-type YargsType = typeof yargs;
+type YargsType = ReturnType<typeof yargs>;
 
 export interface Command<Options> {
     apply(yargs: BaseCommand, callback: (options: Options) => any): BaseCommand;
@@ -42,7 +45,7 @@ export class YargsFluentInjector {
 }
 
 export function baseYargsInjector(configPath: string, config: any, callback: (yargs: YargsFluentInjector) => YargsFluentInjector) {
-    return yargs.command(YargsCommandConfig({ file: configPath }))
+    return yargs().command(YargsCommandConfig({ file: configPath }))
         .command('$0', '', (yargs: YargsType) => {
             return callback(new YargsFluentInjector(baseCommand(yargs).config(config)))
         },
@@ -56,13 +59,7 @@ export function addInputParameters(yarg: BaseCommand) {
         .string(Flags.INPUT_FILE)
         .boolean(Flags.INPUT_STDIN)
         .conflicts(Flags.INPUT_FILE, [Flags.INPUT_STDIN, Flags.INPUT_CID])
-        .conflicts(Flags.INPUT_STDIN, [Flags.INPUT_CID])
-        .check((argv, aliases) => {
-            if ((!argv[Flags.INPUT_FILE]) && (!argv[Flags.INPUT_STDIN]) && (!argv[Flags.INPUT_CID])) {
-                throw `Exactly one of --${Flags.INPUT_FILE}, ${Flags.INPUT_STDIN}, and --${Flags.INPUT_CID} must be provided.`;
-            }
-            return true;
-        });
+        .conflicts(Flags.INPUT_STDIN, [Flags.INPUT_CID]);
 }
 
 export function getStorageOptions(argv): StorageType {
@@ -79,10 +76,19 @@ export function getInputOptions(argv): InputOption {
     if (argv[Flags.INPUT_FILE]) {
         return { type: InputType.File, path: argv[Flags.INPUT_FILE] };
     };
-    if (argv[Flags.INPUT_STDIN]) {
-        return { type: InputType.Std };
+    if (argv[Flags.INPUT_CID]) {
+        return { type: InputType.Cid, cid: argv[Flags.INPUT_CID] };
     }
-    return { type: InputType.Cid, cid: argv[Flags.INPUT_CID] };
+    // If neither --cid or --file was provided, default to stdin.
+    return { type: InputType.Std };
+
+};
+
+export function getIpfsOptions(argv): IPFSOptions {
+    if (argv[Flags.IPFS_INTERNAL_NODE]) {
+        return { type: IPFSMode.Internal };
+    };
+    return { type: IPFSMode.Http, url: argv[Flags.IPFS_URL] };
 };
 
 function getMinimumLogLevel(argv): Logger.LogLevel {
@@ -108,6 +114,6 @@ export function getBaseCommandOptions(argv): BaseCommandOptions {
         minimumLogLevel: getMinimumLogLevel(argv),
         storageType: getStorageOptions(argv),
         databasePath: argv[Flags.DATABASE_PATH],
-        ipfsOptions: argv[Flags.IPFS_URL],
+        ipfsOptions: getIpfsOptions(argv),
     }
 }

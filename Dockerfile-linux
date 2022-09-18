@@ -1,23 +1,42 @@
+# Unpack powershell in a separate image to reduce final image size
+FROM ubuntu as powershell
 
-# BASE IMAGE
-FROM node:16
+RUN apt-get update && apt-get install -y curl
 
-# just get the package*.json files and run npm install. 
+RUN mkdir /powershell
+
+ARG TARGETPLATFORM
+
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x64; elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; \
+  then ARCHITECTURE=arm32; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; else exit 1; fi \
+  && curl -sS -L -O --output-dir /tmp/ --create-dirs "https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/powershell-7.2.6-linux-${ARCHITECTURE}.tar.gz"     && tar xzf "/tmp/powershell-7.2.6-linux-${ARCHITECTURE}.tar.gz" -C /powershell
+
+# Image containing only Mizu
+FROM node:16 as build
+
 # This is helpful for using build cache in subseqent build runs if caching is used when building 
 COPY package*.json ./
 RUN npm install
 
-# copy all app code
 COPY . ./
 
-# build typescript to javascript
-RUN npm run build
+# Add default .mizurc config to the home directory
+# TODO(https://github.com/solipsis-project/mizu-client/issues/17): Improve handling of config files
+RUN echo '{"storage":"mock","db":"/test.db","ipfs-internal":true}' > /root/.mizurc
 
-#global installation of mizu
+RUN npm run build
 RUN npm install -g
 
 # check if mizu is installed and working fine
 RUN mizu --version
 
-# default command executed when user runs the container without any command
 CMD ["mizu", "--help" ]
+
+# Image containing both Mizu and testing tools.
+FROM build as ci-test
+
+COPY --from=powershell /powershell /powershell
+
+RUN ln -s /powershell/pwsh /usr/bin/powershell
+
+CMD ["npm", "run", "test"]

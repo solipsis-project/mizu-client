@@ -5,11 +5,11 @@ import { HashMapDataset, Graph, PlanBuilder, ExecutionContext, PipelineInput } f
 import fs from 'fs';
 import stream from 'stream';
 
-import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common';
-import dagToTriples from './dagToTriples';
-import triplesToDag from './triplesToDag';
+import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common.js';
+import dagToTriples from './dagToTriples.js';
+import triplesToDag from './triplesToDag.js';
 import { CID } from 'multiformats/cid';
-import normalizePath from '../normalizePath';
+import normalizePath from '../normalizePath.js';
 
 // Based on sparql-engine/blob/master/examples/n3.js
 

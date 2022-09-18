@@ -1,7 +1,6 @@
 import { Algebra } from 'sparqljs';
-import { CID } from "ipfs-http-client";
 import { Bindings, Graph, HashMapDataset, PipelineStage, PlanBuilder } from 'sparql-engine';
-import { QueryOutput } from 'sparql-engine/dist/engine/plan-builder';
+import { QueryOutput } from 'sparql-engine/dist/engine/plan-builder.js';
 
 export type IPLDValue = string | number | boolean | IPLD | Array<IPLDValue>;
 

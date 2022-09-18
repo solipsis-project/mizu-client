@@ -10,8 +10,14 @@ export enum LogLevel {
 
 var minimumLogLevel: LogLevel = LogLevel.INFO;
 
+export const consoleLog = console.log;
+
 export function setMinimumLogLevel(newMinimumLogLevel: LogLevel) {
     minimumLogLevel = newMinimumLogLevel;
+}
+
+export function redirectLoggingFromDependencies() {
+    console.log = console.error;
 }
 
 type LogOptions = {
@@ -19,27 +25,29 @@ type LogOptions = {
     terminator?: string;
 }
 
-export function debug(generator: (logger: (...log: unknown[]) => unknown) => unknown, options: LogOptions = {}) {
-    log(LogLevel.DEBUG, generator);
+type LogGenerator = (logger: (...log: unknown[]) => unknown) => unknown;
+
+export function debug(generator: LogGenerator, options: LogOptions = {}) {
+    log(LogLevel.DEBUG, generator, options);
 }
 
-export function verbose(generator: (logger: (...log: unknown[]) => unknown) => unknown, options: LogOptions = {}) {
-    log(LogLevel.VERBOSE, generator);
+export function verbose(generator: LogGenerator, options: LogOptions = {}) {
+    log(LogLevel.VERBOSE, generator, options);
 }
 
-export function info(generator: (logger: (...log: unknown[]) => unknown) => unknown, options: LogOptions = {}) {
-    log(LogLevel.INFO, generator);
+export function info(generator: LogGenerator, options: LogOptions = {}) {
+    log(LogLevel.INFO, generator, options);
 }
 
-export function warn(generator: (logger: (...log: unknown[]) => unknown) => unknown, options: LogOptions = {}) {
-    log(LogLevel.WARN, generator);
+export function warn(generator: LogGenerator, options: LogOptions = {}) {
+    log(LogLevel.WARN, generator, options);
 }
 
-export function error(generator: (logger: (...log: unknown[]) => unknown) => unknown, options: LogOptions = {}) {
-    log(LogLevel.ERROR, generator);
+export function error(generator: LogGenerator, options: LogOptions = {}) {
+    log(LogLevel.ERROR, generator, options);
 }
 
-export function log(logLevel: LogLevel, generator: (logger: (...log: unknown[]) => unknown) => unknown, options: LogOptions = {}) {
+export function log(logLevel: LogLevel, generator: LogGenerator , options: LogOptions = {}) {
     if (logLevel < minimumLogLevel) {
         return;
     }

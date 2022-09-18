@@ -1,6 +1,6 @@
-import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs";
-import Flags from "./flags";
-import { BaseCommandOptions, ViewOptions } from "./options";
+import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs.js";
+import Flags from "./flags.js";
+import { BaseCommandOptions, ViewOptions } from "./options.js";
 
 export const command = 'view'
 export const desc = 'given a Mizu path, print the linked data at that path'

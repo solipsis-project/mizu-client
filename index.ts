@@ -1,19 +1,18 @@
 #!/usr/bin/env node
 
-import * as PublishCommand from './cli/publish'
-import * as QueryCommand from './cli/query'
-import * as ViewCommand from './cli/view'
-import { baseYargsInjector, YargsFluentInjector } from './cli/yargs'
-import { publishCommand } from './publish';
-import { queryCommand } from './query';
-import { viewCommand } from './view';
+import * as PublishCommand from './cli/publish/index.js'
+import * as QueryCommand from './cli/query/index.js'
+import * as ViewCommand from './cli/view/index.js'
+import * as Logger from './logger.js'
+import { baseYargsInjector, YargsFluentInjector } from './cli/yargs.js'
+import { publishCommand } from './publish.js';
+import { queryCommand } from './query.js';
+import { viewCommand } from './view.js';
 import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-
-type YargsType = typeof yargs;
 
 const CONFIG_KEY = "config";
 const DEFAULT_CONFIG_LOCATION = (() => {
@@ -22,11 +21,13 @@ const DEFAULT_CONFIG_LOCATION = (() => {
 })();
 
 async function main() {
-    const argsWithoutConfig = await yargs
+    Logger.redirectLoggingFromDependencies();
+    const argsWithoutConfig = await yargs()
         .option(CONFIG_KEY, {
             type: "string",
             default: DEFAULT_CONFIG_LOCATION
         })
+        .help(false) // By suppressing --help here, we make sure that --help is caught by the subsequent yargs run.
         .parse();
 
     const configFile = argsWithoutConfig[CONFIG_KEY];
@@ -42,7 +43,9 @@ async function main() {
     }).strict().parse(hideBin(process.argv));
 }
 
-main();
+main().catch(reason => {
+    Logger.error((logger) => logger(reason));
+});
 
 
 

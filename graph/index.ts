@@ -1,10 +1,10 @@
 import { Graph } from 'sparql-engine';
-import { N3Graph } from './n3';
-import { LevelRDFGraph } from './levelgraph';
-import { IPLD, LinkedDataGraph } from './common';
-import { MockLinkedDataGraph } from './mocklinkeddatagraph';
-import Flags from '../cli/flags';
-import { StorageType } from '../cli/options';
+import { N3Graph } from './n3.js';
+import { LevelRDFGraph } from './levelgraph.js';
+import { IPLD, LinkedDataGraph } from './common.js';
+import { MockLinkedDataGraph } from './mocklinkeddatagraph.js';
+import Flags from '../cli/flags.js';
+import { StorageType } from '../cli/options.js';
 
 export type GraphClass = (new (dbPath: string) => LinkedDataGraph);
 
@@ -19,4 +19,4 @@ export function getStorage(storageType: StorageType): GraphClass {
     }
 }
 
-export { Triple, makeTriple } from './common';
+export { Triple, makeTriple } from './common.js';
