@@ -1,12 +1,13 @@
 // Convert the JSON DAG to a series of triples
 
-import { CID, IPFSHTTPClient } from "ipfs-http-client";
+import { CID } from 'multiformats/cid';
+import { IPFS } from '../ipfs.js'
 import { IPLDObject, IPLDValue, Triple } from "./common.js";
 
 async function* dagToTriplesInner(
         root_path : string,
         dag : IPLDObject,
-        follow_links : IPFSHTTPClient | false,
+        follow_links : IPFS | false,
         visited_subjects : Set<string>) : AsyncGenerator<Triple> {
     if (visited_subjects.has(root_path))  {
         return;
@@ -35,6 +36,6 @@ async function* dagToTriplesInner(
 export default async function* dagToTriples(
         root_path : string,
         dag : IPLDObject,
-        follow_links : IPFSHTTPClient | false) : AsyncGenerator<Triple> {
+        follow_links : IPFS | false) : AsyncGenerator<Triple> {
     yield* dagToTriplesInner(root_path, dag, follow_links, new Set<string>());
 }

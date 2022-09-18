@@ -1,5 +1,5 @@
 import { getStorage, GraphClass, Triple } from './graph/index.js'
-import { create, IPFSHTTPClient, CID } from 'ipfs-http-client'
+import { CID } from 'multiformats/cid';
 import { IPLD, LinkedDataGraph, resolveQuery } from './graph/common.js';
 import { getInput } from './input.js';
 import { InputType, PublishOptions } from './cli/publish/options.js';
