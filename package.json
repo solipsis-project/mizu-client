@@ -19,7 +19,7 @@
     "@types/jest": "^27.5.2",
     "@types/level": "^6.0.1",
     "@types/lodash": "^4.14.184",
-    "@types/node": "^18.7.16",
+    "@types/node": "^18.7.18",
     "@types/rdf-js": "^4.0.2",
     "@types/yargs": "^17.0.12",
     "cross-env": "^7.0.3",
@@ -45,5 +45,9 @@
     "sparql-engine": "^0.8.2",
     "yargs": "^17.5.1",
     "yargs-command-config": "^1.0.5"
+  },
+  "overrides": {
+    "@types/responselike": "1.0.0",
+    "responselike": "1.0.0"
   }
 }
