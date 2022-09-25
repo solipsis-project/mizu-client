@@ -3,10 +3,11 @@
 // before adding the message to the database.
 
 import _ from "lodash";
-import { IPLD, IPLDObject, IPLDValue } from "./graph/common";
-import ReservedFields from "./reserved_fields";
-import { verifySignature } from "./signer";
+import { IPLD, IPLDObject, IPLDValue } from "./graph/common.js";
+import ReservedFields from "./reserved_fields.js";
+import { verifySignature } from "./signer.js";
 import { CID } from 'multiformats/cid';
+import * as Logger from "./logger.js";
 
 function getIterable(value: IPLDValue): Iterable<IPLDValue> {
     if(_.isArray(value)) {
@@ -41,7 +42,10 @@ function verifySignatures(dagContainingSignatures : IPLD) {
 }
 
 // If the message fails to verify, an exception is thrown containing a user-readable message.
-export function verify(dag: IPLDObject) : void {
+export function verify(dag: IPLDValue) : void {
+    if (!_.isObject(dag)) {
+        return;
+    }
     if (!_.isArray(dag)) {
         verifySignatures(dag);
     }

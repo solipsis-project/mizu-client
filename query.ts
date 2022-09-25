@@ -4,10 +4,10 @@ import { getInput } from './input.js';
 import { InputType, PublishOptions } from './cli/publish/options.js';
 import { QueryOptions } from './cli/query/options.js';
 import { CID } from 'multiformats/cid'
-import { create } from './ipfs.js';
+import createIpfs from './ipfs.js';
 
 export async function queryCommand(options: QueryOptions) {
-    const ipfs_client = await create(options.ipfsOptions);
+    const ipfs_client = await createIpfs(options.ipfsOptions);
     const query = await getInput(options.input, ipfs_client);
 
     if (!(typeof query === "string")) {

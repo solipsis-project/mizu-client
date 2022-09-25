@@ -5,10 +5,11 @@ import { getInput } from './input.js';
 import { InputType, PublishOptions, SigningType } from './cli/publish/options.js';
 import normalizePath from './normalizePath.js';
 import * as Logger from './logger.js';
-import { create } from './ipfs.js';
+import createIpfs from './ipfs.js';
 import _ from 'lodash';
 import ReservedFields from './reserved_fields.js';
 import { getSigner } from './signer.js';
+import { verify } from './verifier.js';
 
 export async function publishCommand(options: PublishOptions) {
     Logger.setMinimumLogLevel(options.minimumLogLevel);
@@ -16,8 +17,9 @@ export async function publishCommand(options: PublishOptions) {
     if (inputOption.type == InputType.Cid && signingOption.type != SigningType.None) {
         throw "Message signing is not allowed when input type is CID";
     }
-    const ipfs_client = await create(options.ipfsOptions);
+    const ipfs_client = await createIpfs(options.ipfsOptions);
     const dag = await getInput(inputOption, ipfs_client);
+    verify(dag);
     if (signingOption.type != SigningType.None) {
         const signer = getSigner();
         var signatures = dag[ReservedFields.SIGNATURES];
