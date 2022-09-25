@@ -1,17 +1,16 @@
 import { IPFSMode, IPFSOptions } from './cli/options.js'
 
-//import * as IpfsCore from 'ipfs-core'
-//import * as IpfsHttp from 'ipfs-http-client'
-// import * as IPFSFull from 'ipfs'
-//import type {IPFS as IpfsCoreType} from 'ipfs-core-types'
+import * as IpfsCore from 'ipfs-core'
+import * as IpfsHttp from 'ipfs-http-client'
+import type {IPFS as IpfsCoreType} from 'ipfs-core-types'
 
-//export type IPFS = IpfsCoreType | IpfsHttp.IPFSHTTPClient;
+// TODO (https://github.com/solipsis-project/mizu-client/issues/21)
+// There are some slight differences in the interface that prevent this from working.
+export type IPFS = any;//IpfsCoreType | IpfsHttp.IPFSHTTPClient;
 
-export type IPFS = any;
-
-export async function create(options: IPFSOptions): Promise<IPFS> {
+export default async function create(options: IPFSOptions): Promise<IPFS> {
     if (options.type == IPFSMode.Internal) {
-        return await require('ipfs-core').create();
+        return IpfsCore.create();
     }
-    return require('ipfs-http-client').create({url: options.url});
+    return IpfsHttp.create({url: options.url});
 }
