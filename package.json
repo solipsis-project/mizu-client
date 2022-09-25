@@ -21,6 +21,7 @@
     "@types/lodash": "^4.14.184",
     "@types/node": "^18.7.18",
     "@types/rdf-js": "^4.0.2",
+    "@types/varint": "^6.0.0",
     "@types/yargs": "^17.0.12",
     "cross-env": "^7.0.3",
     "ipfs-core": "^0.16.0",
@@ -30,6 +31,7 @@
     "typescript": "^4.6.0-dev.20220209"
   },
   "dependencies": {
+    "@libp2p/crypto": "^1.0.4",
     "get-stdin": "^9.0.0",
     "ipfs": "^0.64.0",
     "ipfs-core-types": "^0.12.0",
@@ -41,8 +43,10 @@
     "levelgraph": "^2.1.1",
     "levelgraph-jsonld": "^1.2.0",
     "lodash": "^4.17.21",
+    "multiformats": "^10.0.0-pre.4",
     "n3": "^0.11.3",
     "sparql-engine": "^0.8.2",
+    "varint": "^6.0.0",
     "yargs": "^17.5.1",
     "yargs-command-config": "^1.0.5"
   },
