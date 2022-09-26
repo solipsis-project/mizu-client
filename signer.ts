@@ -18,9 +18,6 @@ export async function verifySignature(dagWithoutSignatures: IPLD, encodedKey: st
     // key is a multicodec containing a public key. By decoding it, we can determine the algorithm used.
     const keyBuffer = base58btc.decode(encodedKey);
     const keyType = varint.decode(keyBuffer);
-    if (keyType != LIBP2P_PUB) {
-        throw 'Signautre key must be a LibP2P public key multicodec.';
-    }
     const key = crypto.keys.unmarshalPublicKey(keyBuffer);
 
     // Serialize the dag without signautres so that we can sign it.
