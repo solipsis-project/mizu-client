@@ -1,5 +1,5 @@
 import { getStorage, GraphClass, Triple } from './graph/index.js'
-import { CID } from 'multiformats/cid'
+import { CID } from 'multiformats'
 import { IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
 import { getInput } from './input.js';
 import { InputType, PublishOptions, SigningType } from './cli/publish/options.js';

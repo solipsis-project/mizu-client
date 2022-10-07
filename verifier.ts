@@ -6,7 +6,7 @@ import _ from "lodash";
 import { IPLD, IPLDObject, IPLDValue } from "./graph/common.js";
 import ReservedFields from "./reserved_fields.js";
 import { verifySignature } from "./signer.js";
-import { CID } from 'multiformats/cid';
+import { CID } from 'multiformats';
 import * as Logger from "./logger.js";
 
 function getIterable(value: IPLDValue): Iterable<IPLDValue> {

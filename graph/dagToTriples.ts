@@ -1,6 +1,6 @@
 // Convert the JSON DAG to a series of triples
 
-import { CID } from 'multiformats/cid';
+import { CID } from 'multiformats';
 import { IPFS } from '../ipfs.js'
 import { IPLDObject, IPLDValue, Triple } from "./common.js";
 

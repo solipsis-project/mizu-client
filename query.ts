@@ -3,7 +3,7 @@ import { IPLD, LinkedDataGraph, resolveQuery } from './graph/common.js';
 import { getInput } from './input.js';
 import { InputType, PublishOptions } from './cli/publish/options.js';
 import { QueryOptions } from './cli/query/options.js';
-import { CID } from 'multiformats/cid'
+import { CID } from 'multiformats'
 import createIpfs from './ipfs.js';
 
 export async function queryCommand(options: QueryOptions) {

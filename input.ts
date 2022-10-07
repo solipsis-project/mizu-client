@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { IPLDValue } from './graph/common.js';
 import { InputOption, InputType } from './cli/options.js';
-import { CID } from 'multiformats/cid'
+import { CID } from 'multiformats'
 import { IPFS } from './ipfs.js';
 
 

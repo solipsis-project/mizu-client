@@ -8,7 +8,7 @@ import stream from 'stream';
 import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common.js';
 import dagToTriples from './dagToTriples.js';
 import triplesToDag from './triplesToDag.js';
-import { CID } from 'multiformats/cid';
+import { CID } from 'multiformats';
 import normalizePath from '../normalizePath.js';
 
 // Based on sparql-engine/blob/master/examples/n3.js

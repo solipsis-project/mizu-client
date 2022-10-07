@@ -7,7 +7,7 @@ import util from 'util';
 import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common.js';
 import dagToTriples from './dagToTriples.js';
 import triplesToDag from './triplesToDag.js';
-import { CID } from 'multiformats/cid';
+import { CID } from 'multiformats';
 import normalizePath from '../normalizePath.js';
 import * as Logger from '../logger.js';
 
