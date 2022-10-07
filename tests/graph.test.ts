@@ -62,10 +62,8 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             expect(await graph.count()).toBe(0);
-            console.log(await graph.getIPLD(':a'));
             await graph.insert(makeTriple(':a', ':b', ':c'));
             expect(await graph.count()).toBe(1);
-            console.log(await graph.getIPLD(':a'));
 
             const query = `
             SELECT ?s ?p ?o
@@ -84,10 +82,8 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             expect(await graph.count()).toBe(0);
             await graph.insert(makeTriple('https://mizu.io/a', 'https://mizu.io/b', 'https://mizu.io/c'));
             expect(await graph.count()).toBe(1);
-            console.log(await graph.getIPLD('a'));
             await graph.insert(makeTriple('https://mizu.io/d', 'https://mizu.io/e', 'https://mizu.io/f'));
             expect(await graph.count()).toBe(2);
-            console.log(await graph.getIPLD('a'));
 
             const query = `
             SELECT ?s
