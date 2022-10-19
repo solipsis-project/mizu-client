@@ -1,0 +1,1 @@
+export { base58btc as multibase } from 'multiformats/bases/base58'
