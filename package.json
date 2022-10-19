@@ -9,7 +9,9 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/index.js",
-    "test": "powershell tests/run_all_tests.ps1"
+    "test": "powershell tests/run_all_tests.ps1",
+    "unit-tests": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "integration-tests": "node dist/build_documentation_tests.js && powershell tests/run_generated_powershell_tests.ps1"
   },
   "bin": "dist/index.js",
   "keywords": [],
