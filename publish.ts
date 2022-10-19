@@ -1,6 +1,6 @@
 import { getStorage, GraphClass, Triple } from './graph/index.js'
 import { CID } from 'multiformats'
-import { IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
+import { IPLD, IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
 import { getInput } from './input.js';
 import { InputType, PublishOptions, SigningType } from './cli/publish/options.js';
 import normalizePath from './normalizePath.js';
@@ -10,6 +10,7 @@ import _ from 'lodash';
 import ReservedFields from './reserved_fields.js';
 import { getSigner } from './signer.js';
 import { verify } from './verifier.js';
+import { multibase } from './multibase.js';
 
 export async function publishCommand(options: PublishOptions) {
     Logger.setMinimumLogLevel(options.minimumLogLevel);
@@ -18,10 +19,11 @@ export async function publishCommand(options: PublishOptions) {
         throw "Message signing is not allowed when input type is CID";
     }
     const ipfs_client = await createIpfs(options.ipfsOptions);
-    const dag = await getInput(inputOption, ipfs_client);
+    const dag = await getInput(inputOption, ipfs_client) as IPLD;
+    // TODO: confirm dag is a graph
     verify(dag);
     if (signingOption.type != SigningType.None) {
-        const signer = getSigner();
+        const signer = await getSigner(signingOption);
         var signatures = dag[ReservedFields.SIGNATURES];
         delete dag[ReservedFields.SIGNATURES];
         if (_.isUndefined(signatures)) {
@@ -30,11 +32,11 @@ export async function publishCommand(options: PublishOptions) {
         if (!_.isArray(signatures)) {
             throw "Message has invalid $signatures field.";
         }
-        const multicodecKey = signer.convertKeyToMulticodec(signingOption.key);
-        const digest = signer.computeDigest(signingOption.key, dag);
+        const multicodecKey = signer.marshallPublicKey();
+        const digest = await signer.computeDigest(dag);
         signatures.push({
-            [ReservedFields.SIGNATURES_KEY]: multicodecKey,
-            [ReservedFields.SIGNATURES_DIGEST]: digest
+            [ReservedFields.SIGNATURES_KEY]:  multibase.encode(multicodecKey),
+            [ReservedFields.SIGNATURES_DIGEST]: multibase.encode(digest),
         })
         dag[ReservedFields.SIGNATURES] = signatures;
     }
@@ -47,7 +49,7 @@ export async function publishCommand(options: PublishOptions) {
         throw "Published data is a primitive, not linked data.";
     }
     await publish(graph, cid, dag);
-    graph.save(options.databasePath);
+    await graph.save(options.databasePath);
     Logger.consoleLog(cid.toString());
     ipfs_client.stop();
 }
