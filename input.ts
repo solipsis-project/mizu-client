@@ -17,5 +17,7 @@ export async function getInput(input: InputOption, ipfs_client: IPFS): Promise<I
             const cid = CID.parse(input.cid);
             // Support full ipfs address with CID and path.
             return ipfs_client.dag.get(cid).then((dag) => dag.value);
+        case InputType.Ipld:
+            return input.value;
     }
 }
