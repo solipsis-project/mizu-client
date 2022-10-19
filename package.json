@@ -42,6 +42,7 @@
     "ipfs-http-client": "^56.0.3",
     "ipfs-utils": "^9.0.7",
     "is-ipfs": "^6.0.2",
+    "jschardet": "^3.0.0",
     "json-rql-sparql": "^0.6.2",
     "level": "^6.0.1",
     "levelgraph": "^2.1.1",
