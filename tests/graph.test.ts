@@ -8,6 +8,7 @@ import { N3Graph } from '../graph/n3'
 import { LevelRDFGraph } from '../graph/levelgraph'
 import { MockLinkedDataGraph } from '../graph/mocklinkeddatagraph'
 import { resolveQuery } from '../graph/common'
+import assert from 'assert';
 
 const tempContainingDir = `./temp/`
 
@@ -26,11 +27,11 @@ async function clearTempFiles(createTestDir: boolean): Promise<void> {
     });
 }
 
-beforeAll(async () => {
+before(async () => {
     await clearTempFiles(true);
 });
 
-afterAll(async () => {
+after(async () => {
     await clearTempFiles(false);
 });
 
@@ -40,12 +41,13 @@ async function withTempDir(dbPath: string, callback) {
     fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
-describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
-    test('empty graph', async () => {
+for (const GraphClass of [MockLinkedDataGraph]) {
+describe(`Graph tests ${GraphClass}`, () => {
+    it('empty graph', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
-            expect(await graph.count()).toBe(0);
+            assert.deepEqual(await graph.count(), 0);
 
             const query = `
             SELECT ?s
@@ -53,17 +55,17 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([]);
+            assert.deepEqual(results, []);
         });
     });
 
-    test('single insert', async () => {
+    it('single insert', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
-            expect(await graph.count()).toBe(0);
+            assert.deepEqual(await graph.count(), 0);
             await graph.insert(makeTriple(':a', ':b', ':c'));
-            expect(await graph.count()).toBe(1);
+            assert.deepEqual(await graph.count(), 1);
 
             const query = `
             SELECT ?s ?p ?o
@@ -71,19 +73,19 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([{ '?s': ':a', '?p': ':b', '?o': ':c' }]);
+            assert.deepEqual(results, [{ '?s': ':a', '?p': ':b', '?o': ':c' }]);
         });
     });
 
-    test('multiple inserts', async () => {
+    it('multiple inserts', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
-            expect(await graph.count()).toBe(0);
+            assert.deepEqual(await graph.count(), 0);
             await graph.insert(makeTriple('https://mizu.io/a', 'https://mizu.io/b', 'https://mizu.io/c'));
-            expect(await graph.count()).toBe(1);
+            assert.deepEqual(await graph.count(), 1);
             await graph.insert(makeTriple('https://mizu.io/d', 'https://mizu.io/e', 'https://mizu.io/f'));
-            expect(await graph.count()).toBe(2);
+            assert.deepEqual(await graph.count(), 2);
 
             const query = `
             SELECT ?s
@@ -91,7 +93,7 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([{ '?s': 'https://mizu.io/a' }, { '?s': 'https://mizu.io/d' }]);
+            assert.deepEqual(results, [{ '?s': 'https://mizu.io/a' }, { '?s': 'https://mizu.io/d' }]);
 
             const query2 = `
             SELECT *
@@ -99,19 +101,19 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             <MIZU:a> ?p ?o
             }`
             // const results2 = await resolveQuery(graph, query2)
-            // expect(results2).toEqual([{ '?p' : 'MIZU:b' , '?o' : 'MIZU:c'}]);
+            // assert.deepEqual(results2, [{ '?p' : 'MIZU:b' , '?o' : 'MIZU:c'}]);
         });
     });
 
-    test('inserting linked data', async () => {
+    it('inserting linked data', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
-            expect(await graph.count()).toBe(0);
+            assert.deepEqual(await graph.count(), 0);
             await graph.insert(makeTriple('a', 'b', 'c'));
-            expect(await graph.count()).toBe(1);
+            assert.deepEqual(await graph.count(), 1);
             await graph.insert(makeTriple('d', 'e', 'f'));
-            expect(await graph.count()).toBe(2);
+            assert.deepEqual(await graph.count(), 2);
 
             const query = `
             SELECT ?s
@@ -119,7 +121,8 @@ describe.each([MockLinkedDataGraph])("Graph tests %O", (GraphClass) => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            expect(results).toEqual([{ '?s': 'a' }, { '?s': 'd' }]);
+            assert.deepEqual(results, [{ '?s': 'a' }, { '?s': 'd' }]);
         });
     });
 });
+}
