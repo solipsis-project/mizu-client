@@ -10,6 +10,7 @@ import triplesToDag from './triplesToDag.js';
 import { CID } from 'multiformats';
 import normalizePath from '../normalizePath.js';
 import * as Logger from '../logger.js';
+import _ from 'lodash';
 
 // The simplest possible implementation of a triplestore and linked data graph.
 // Useful for tests. Don't use this in production, obviously.
@@ -46,7 +47,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
       return this.triples;
     }
     // Remove domain name from predicate, since we don't store it in the database.
-    // Not that this assumes that the domain for the predicate will always be the Mizu IRI,
+    // Note that this assumes that the domain for the predicate will always be the Mizu IRI,
     // Which is true if only relative IRIs are used, since we set the base.
     const predicate = pattern.predicate.slice(IRI.length);
     var results = new Set<Triple>();
@@ -79,14 +80,14 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     return Promise.resolve();
   }
 
-  async putIPLD(root: string, dag: IPLDObject): Promise<void> {
-    for await (const triple of dagToTriples(root, dag, false)) {
+  async putIPLD(root: string, dag: IPLD): Promise<void> {
+    for await (const triple of dagToTriples(root, dag)) {
       Logger.debug((logger) => logger("added triple: ", triple));
       await this.insert(triple);
     }
   }
 
-  async getIPLD(root: string, follow_links = false): Promise<IPLDObject> {
+  async getIPLD(root: string): Promise<IPLD> {
     // Compute the root subject.
     // Find all its properties
     // Make new queries for them.
@@ -95,7 +96,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     // Making as-needed queries is probably better.
 
     if (true) {
-      return triplesToDag(root, Array.from(this.find()), follow_links) as IPLD;
+      return triplesToDag(root, Array.from(this.find())) as IPLD;
     }
 
     const subjects = new Map<string, IPLD>();
