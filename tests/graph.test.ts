@@ -42,7 +42,7 @@ async function withTempDir(dbPath: string, callback) {
 }
 
 for (const GraphClass of [MockLinkedDataGraph]) {
-describe(`Graph tests ${GraphClass}`, () => {
+describe(`Graph tests ${GraphClass.name}`, () => {
     it('empty graph', async () => {
         await withTempDir(tempContainingDir, async (tempDir) => {
             const dbPath = `${tempDir}/db`;
@@ -82,9 +82,9 @@ describe(`Graph tests ${GraphClass}`, () => {
             const dbPath = `${tempDir}/db`;
             const graph = new GraphClass(dbPath);
             assert.deepEqual(await graph.count(), 0);
-            await graph.insert(makeTriple('https://mizu.io/a', 'https://mizu.io/b', 'https://mizu.io/c'));
+            await graph.insert(makeTriple('https://mizu.stream/a', 'https://mizu.stream/b', 'https://mizu.stream/c'));
             assert.deepEqual(await graph.count(), 1);
-            await graph.insert(makeTriple('https://mizu.io/d', 'https://mizu.io/e', 'https://mizu.io/f'));
+            await graph.insert(makeTriple('https://mizu.stream/d', 'https://mizu.stream/e', 'https://mizu.stream/f'));
             assert.deepEqual(await graph.count(), 2);
 
             const query = `
@@ -93,7 +93,7 @@ describe(`Graph tests ${GraphClass}`, () => {
             ?s ?p ?o
             }`
             const results = await resolveQuery(graph, query)
-            assert.deepEqual(results, [{ '?s': 'https://mizu.io/a' }, { '?s': 'https://mizu.io/d' }]);
+            assert.deepEqual(results, [{ '?s': 'https://mizu.stream/a' }, { '?s': 'https://mizu.stream/d' }]);
 
             const query2 = `
             SELECT *

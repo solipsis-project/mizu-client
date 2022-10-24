@@ -25,7 +25,7 @@ export function makeTriple(subject: string, predicate: string, object: string) {
     return { subject, predicate, object };
 }
 
-export const IRI = "https://mizu.io/";
+export const IRI = "https://mizu.stream/";
 
 // TODO:
 // -learn SPARQL
