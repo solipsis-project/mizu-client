@@ -9,6 +9,8 @@ import fs from 'fs';
 import varint from 'varint';
 import * as Logger from './logger';
 import { SigningOption, SigningType } from './cli/publish/options.js';
+import readFile from './readfile.js';
+import { VerificationError } from './errors.js';
 
 const LIBP2P_PUB = 0x72;
 
@@ -22,7 +24,7 @@ class PemSigner implements Signer {
     constructor(private readonly privateKey : PrivateKey) {}
 
     static async create(filepath : string, password : string) {
-        const pemContents = await fs.promises.readFile(filepath);
+        const pemContents = await readFile(filepath);
         const privateKey = await crypto.keys.importKey(pemContents.toString(), password);
         return new PemSigner(privateKey);
     }
@@ -59,7 +61,8 @@ export async function verifySignature(dagWithoutSignatures: IPLD, encodedKey: st
 
     const digestBuffer = multibase.decode(encodedDigest);
 
-    if (!(await key.verify(dagCbor, digestBuffer))) {
-        throw "Unable to verify key";
+    const messageVerified = await key.verify(dagCbor, digestBuffer);
+    if (!messageVerified) {
+        throw new VerificationError("Unable to verify key");
     }
 }

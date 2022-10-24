@@ -3,12 +3,13 @@ import { IPLDValue } from './graph/common.js';
 import { InputOption, InputType } from './cli/options.js';
 import { CID } from 'multiformats'
 import { IPFS } from './ipfs.js';
+import readFile from './readfile.js';
 
 
 export async function getInput(input: InputOption, ipfs_client: IPFS): Promise<IPLDValue> {
     switch (input.type) {
         case InputType.File:
-            return fs.promises.readFile(input.path).then((buffer) => JSON.parse(buffer.toString()));
+            return readFile(input.path).then((buffer) => JSON.parse(buffer.toString()));
         case InputType.Std:
             const getStdin = (await import('get-stdin')).default;
             return getStdin().then((s) => JSON.parse(s.trim()));
