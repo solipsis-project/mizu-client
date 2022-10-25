@@ -19,7 +19,10 @@ async function* yieldTriple(
         yield { subject: root_path, predicate: key, object: child_path }
         yield* dagToTriples(child_path, value);
     } else {
-        yield { subject: root_path, predicate: key, object: value.toString() }
+        // The version of sparql-js we use stores literals as strings.
+        // In order to distinguish between, eg. 2 and "2", quote the string literals.
+        const object = _.isString(value) ? `"${value}"` : value.toString();
+        yield { subject: root_path, predicate: key, object: object }
     }
 }
 

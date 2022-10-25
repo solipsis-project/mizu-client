@@ -52,9 +52,10 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     const predicate = pattern.predicate.slice(IRI.length);
     var results = new Set<Triple>();
     this.triples.forEach((triple) => {
-      if ((isVariable(pattern.subject) || (pattern.subject == triple.subject)) &&
-        (isVariable(pattern.predicate) || (predicate == triple.predicate)) &&
-        (isVariable(pattern.object) || (pattern.object == triple.object))) {
+      const subjectMatch = isVariable(pattern.subject) || (pattern.subject == triple.subject);
+      const predicateMatch = isVariable(pattern.predicate) || (predicate == triple.predicate);
+      const objectMatch = isVariable(pattern.object) || (pattern.object == triple.object);
+      if (subjectMatch && predicateMatch && objectMatch) {
         results.add(triple);
       }
     });
