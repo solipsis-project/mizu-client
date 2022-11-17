@@ -15,6 +15,24 @@ const TEST_CASE_PREFIX = "[test]: #";
 const RESULT_VARIABLE_NAME = "CITestResult" // chosen to be unlikely to collide with variables used in the examples.
 
 const PREAMBLE = '\
+Param(\n\
+    [Parameter(Position=0)]\n\
+    [string[]]\n\
+    $TestFlags\n\
+)\n\
+$EnabledTests = New-Object System.Collections.Generic.List[string]\n\
+$DisabledTests = New-Object System.Collections.Generic.List[string]\n\
+$RunUnnnamedTests = $true\n\
+\n\
+foreach ($TestFlag in $TestFlags)\n\
+{\n\
+    if ($TestFlag.substring(0, 1) -eq "!") {\n\
+        $DisabledTests.Add($TestFlag.substring(1))\n\
+        $RunUnnnamedTests = True\n\
+    } else {\n\
+        $EnabledTests.Add($TestFlag)\n\
+    }\n\
+}\n\
 $FailedTests = 0\n\
 $PassedTests = 0\n\
 $TotalTests = 0\n\
@@ -41,7 +59,7 @@ if ($FailedTests -gt 0) {\n\
 
 /*
 Scan each file, looking for codeblocks preceeded by the following link label:
-[test]: #
+[test]: # (test_name)
 In the following code block, each line that begins with a '>' is interpreted as a command.
 Each line that doesn't begin with a '>' is interpreted as an expected response.
 
@@ -59,11 +77,19 @@ async function parseInputFile(inputPath: string, outputPath: string) {
     var state: State = "awaiting_comment";
     var lineNumber = 0;
     var buffer = "";
+    var test_name = "";
     for await (const line of lines) {
         lineNumber++;
         if (state == "awaiting_comment") {
-            if (line == TEST_CASE_PREFIX) {
+            if (line.startsWith(TEST_CASE_PREFIX)) {
                 state = "awaiting_block_start";
+                const start_index = line.indexOf('(')
+                if (start_index == -1) {
+                    continue;
+                }
+                const end_index = line.indexOf(')')
+                test_name = line.substring(start_index + 1, end_index)
+                
             }
             continue;
         } else if (state == "awaiting_block_start") {
@@ -85,11 +111,13 @@ async function parseInputFile(inputPath: string, outputPath: string) {
                     await output.write(`$${RESULT_VARIABLE_NAME} = (${buffer})\n`);
                 } else {
                     const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${buffer}', got $${RESULT_VARIABLE_NAME}}`;
-                    await output.write(`if ($${RESULT_VARIABLE_NAME} -ne '${buffer}') \n{\n${FAILURE_TEMPLATE(error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE}}\n`);
+                    const test_name_prefix = (test_name == "") ? "($RunUnnamedTests)" : `(($EnabledTests -Contains "${test_name}") -Or ( $RunUnnamedTests -And (-Not ($DisabledTests -Contains "${test_name}"))))`
+                    await output.write(`if (${test_name_prefix} -And ($${RESULT_VARIABLE_NAME} -ne '${buffer}')) \n{\n${FAILURE_TEMPLATE(error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE}}\n`);
                 }
                 buffer = '';
             }
             if (is_block_end) {
+                test_name = "";
                 state = "awaiting_comment";
                 continue;
             }
