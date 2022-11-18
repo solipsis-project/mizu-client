@@ -22,28 +22,38 @@ Param(\n\
 )\n\
 $EnabledTests = New-Object System.Collections.Generic.List[string]\n\
 $DisabledTests = New-Object System.Collections.Generic.List[string]\n\
-$RunUnnnamedTests = $true\n\
+$RunUnnamedTests = $true\n\
 \n\
 foreach ($TestFlag in $TestFlags)\n\
 {\n\
     if ($TestFlag.substring(0, 1) -eq "!") {\n\
         $DisabledTests.Add($TestFlag.substring(1))\n\
-        $RunUnnnamedTests = True\n\
+        $RunUnnamedTests = $true\n\
     } else {\n\
         $EnabledTests.Add($TestFlag)\n\
+        $RunUnnamedTests = $false\n\
     }\n\
 }\n\
 $FailedTests = 0\n\
 $PassedTests = 0\n\
+$SkippedTests = 0\n\
 $TotalTests = 0\n\
 ';
 
-const SUCCESS_TEMPLATE = '\
+const SUCCESS_TEMPLATE = (testName: string) => `\
+\techo "Passed: ${testName}"\n\
 \t$PassedTests++\n\
 \t$TotalTests++\n\
-';
+`;
 
-const FAILURE_TEMPLATE = (errorMessage: string) => `\
+const SKIPPED_TEMPLATE = (testName: string) => `\
+\techo "Skipping ${testName}"\n\
+\t$SkippedTests++\n\
+\t$TotalTests++\n\
+`;
+
+const FAILURE_TEMPLATE = (testName: string, errorMessage: string) => `\
+\techo "Failed: ${testName}"\n\
 \techo "${errorMessage}"\n\
 \t$FailedTests++\n\
 \t$TotalTests++\
@@ -51,9 +61,9 @@ const FAILURE_TEMPLATE = (errorMessage: string) => `\
 
 const POSTAMBLE = (inputPath: string) => ` \
 if ($FailedTests -gt 0) {\n\
-    throw "$FailedTests/$TotalTests examples failed in ${inputPath}; see above for more information."\n\
+    throw "$SkippedTests skipped, $PassedTests passed, $FailedTests failed in ${inputPath}; see above for more information."\n\
 } else {\n\
-    echo "Verified all $TotalTests examples in ${inputPath}."\n\
+    echo "$SkippedTests skipped, $PassedTests passed in ${inputPath}."\n\
 }\
 `;
 
@@ -112,7 +122,7 @@ async function parseInputFile(inputPath: string, outputPath: string) {
                 } else {
                     const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${buffer}', got $${RESULT_VARIABLE_NAME}}`;
                     const test_name_prefix = (test_name == "") ? "($RunUnnamedTests)" : `(($EnabledTests -Contains "${test_name}") -Or ( $RunUnnamedTests -And (-Not ($DisabledTests -Contains "${test_name}"))))`
-                    await output.write(`if (${test_name_prefix} -And ($${RESULT_VARIABLE_NAME} -ne '${buffer}')) \n{\n${FAILURE_TEMPLATE(error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE}}\n`);
+                    await output.write(`if ( -Not ${test_name_prefix}) {\n${SKIPPED_TEMPLATE(test_name)}} elseif ($${RESULT_VARIABLE_NAME} -ne '${buffer}') \n{\n${FAILURE_TEMPLATE(test_name, error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE(test_name)}}\n`);
                 }
                 buffer = '';
             }
