@@ -41,22 +41,22 @@ $TotalTests = 0\n\
 ';
 
 const SUCCESS_TEMPLATE = (testName: string) => `\
-\techo "Passed: ${testName}"\n\
-\t$PassedTests++\n\
-\t$TotalTests++\n\
+\t\techo "Passed: ${testName}"\n\
+\t\t$PassedTests++\n\
+\t\t$TotalTests++\n\
 `;
 
 const SKIPPED_TEMPLATE = (testName: string) => `\
-\techo "Skipping ${testName}"\n\
-\t$SkippedTests++\n\
-\t$TotalTests++\n\
+\t\techo "Skipping ${testName}"\n\
+\t\t$SkippedTests++\n\
+\t\t$TotalTests++\n\
 `;
 
 const FAILURE_TEMPLATE = (testName: string, errorMessage: string) => `\
-\techo "Failed: ${testName}"\n\
-\techo "${errorMessage}"\n\
-\t$FailedTests++\n\
-\t$TotalTests++\
+\t\techo "Failed: ${testName}"\n\
+\t\techo "${errorMessage}"\n\
+\t\t$FailedTests++\n\
+\t\t$TotalTests++\
 `;
 
 const POSTAMBLE = (inputPath: string) => ` \
@@ -99,7 +99,8 @@ async function parseInputFile(inputPath: string, outputPath: string) {
                 }
                 const end_index = line.indexOf(')')
                 test_name = line.substring(start_index + 1, end_index)
-                
+                const test_name_prefix = (test_name == "") ? "($RunUnnamedTests)" : `(($EnabledTests -Contains "${test_name}") -Or ( $RunUnnamedTests -And (-Not ($DisabledTests -Contains "${test_name}"))))`
+                await output.write(`if ( -Not ${test_name_prefix}) {\n${SKIPPED_TEMPLATE(test_name)}} else {\n`)
             }
             continue;
         } else if (state == "awaiting_block_start") {
@@ -118,15 +119,15 @@ async function parseInputFile(inputPath: string, outputPath: string) {
         if (!is_multiline) { // Flush the buffer before processing the next line.
             if (buffer != '') {
                 if (state == "parsing_command") {
-                    await output.write(`$${RESULT_VARIABLE_NAME} = (${buffer})\n`);
+                    await output.write(`\t$${RESULT_VARIABLE_NAME} = (${buffer})\n`);
                 } else {
                     const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${buffer}', got $${RESULT_VARIABLE_NAME}}`;
-                    const test_name_prefix = (test_name == "") ? "($RunUnnamedTests)" : `(($EnabledTests -Contains "${test_name}") -Or ( $RunUnnamedTests -And (-Not ($DisabledTests -Contains "${test_name}"))))`
-                    await output.write(`if ( -Not ${test_name_prefix}) {\n${SKIPPED_TEMPLATE(test_name)}} elseif ($${RESULT_VARIABLE_NAME} -ne '${buffer}') \n{\n${FAILURE_TEMPLATE(test_name, error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE(test_name)}}\n`);
+                    await output.write(`\tif ($${RESULT_VARIABLE_NAME} -ne '${buffer}') \n{\n${FAILURE_TEMPLATE(test_name, error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE(test_name)}}\n`);
                 }
                 buffer = '';
             }
             if (is_block_end) {
+                await output.write('}\n')
                 test_name = "";
                 state = "awaiting_comment";
                 continue;
@@ -139,7 +140,7 @@ async function parseInputFile(inputPath: string, outputPath: string) {
                 buffer = line;
             }
         } else if (state == "parsing_command") {
-            buffer += "\n" + line;
+            buffer += "\n\t" + line;
         } else if (state == "parsing_response") {
             // Escape single quotes in the expected output.
             buffer += "\n" + line.replace(/'/g, "''");
