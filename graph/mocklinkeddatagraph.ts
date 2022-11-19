@@ -133,7 +133,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     var lineNumber = 0;
     content.split('\n').forEach((line) => {
       lineNumber++;
-      const terms = line.split(new RegExp('(?<!\\\\),'));
+      const terms = line.split(new RegExp('(?<!\\\\),')).map((term) => term.replace("\\,", ","));
       if (terms.length == 0) {
         // Allow empty lines to ensure that we correctly parse a db with no records.
         return;
