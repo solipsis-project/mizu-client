@@ -44,3 +44,7 @@ RUN ln -s /powershell/pwsh /usr/bin/powershell
 RUN npm run --silent keygen 'test' > /id_rsa
 
 CMD ["npm", "run", "test"]
+
+FROM ci-test as ci-run-tests
+
+RUN npm run test
