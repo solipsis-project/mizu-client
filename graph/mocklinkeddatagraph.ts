@@ -21,7 +21,7 @@ function isVariable(name: string): boolean {
 
 export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
-  triples: Set<Triple> = new Set<Triple>();
+  triples: Array<Triple> = [];
 
   constructor(dbPath: string) {
     super();
@@ -33,16 +33,17 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
   // Methods inherited from Graph
 
   insert(triple: Triple) {
-    this.triples.add(triple);
+    this.triples.push(triple);
+    this.triples = _.uniqWith(this.triples, _.isEqual);
     return Promise.resolve();
   }
 
   delete(triple: Triple) {
-    this.triples.delete(triple);
+    _.pullAllWith(this.triples, [triple], _.isEqual);
     return Promise.resolve();
   }
 
-  find(pattern?: Triple, context?: ExecutionContext): Set<Triple> {
+  find(pattern?: Triple, context?: ExecutionContext): Array<Triple> {
     if (!pattern) {
       return this.triples;
     }
@@ -50,20 +51,20 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     // Note that this assumes that the domain for the predicate will always be the Mizu IRI,
     // Which is true if only relative IRIs are used, since we set the base.
     const predicate = pattern.predicate.slice(IRI.length);
-    var results = new Set<Triple>();
+    var results = [];
     this.triples.forEach((triple) => {
       const subjectMatch = isVariable(pattern.subject) || (pattern.subject == triple.subject);
       const predicateMatch = isVariable(pattern.predicate) || (predicate == triple.predicate);
       const objectMatch = isVariable(pattern.object) || (pattern.object == triple.object);
       if (subjectMatch && predicateMatch && objectMatch) {
-        results.add(triple);
+        results.push(triple);
       }
     });
     return results;
   }
 
   clear(): Promise<void> {
-    this.triples.clear();
+    this.triples = [];
     return Promise.resolve();
   }
 
@@ -71,9 +72,9 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
   count(pattern?: Triple) {
     if (!pattern) {
-      return Promise.resolve(this.triples.size);
+      return Promise.resolve(this.triples.length);
     }
-    return Promise.resolve(this.find(pattern).size)
+    return Promise.resolve(this.find(pattern).length)
   }
 
   forEach(callback) {
@@ -83,7 +84,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
   async putIPLD(root: string, dag: IPLD): Promise<void> {
     for await (const triple of dagToTriples(root, dag)) {
-      Logger.debug((logger) => logger("added triple: ", triple));
+      // Logger.debug((logger) => logger("added triple: ", triple));
       await this.insert(triple);
     }
   }
@@ -116,7 +117,6 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
       <${subject}> ?p ?o
       }`;
       for (const result of await resolveQuery(graph, query)) {
-        console.log(result);
         const resultLinkedData = await getSubject(result['?o']);
         subjectLinkedData[result['?p']] = resultLinkedData;
       }
@@ -149,7 +149,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     if (fs.existsSync(dbPath)) {
       fs.copyFileSync(dbPath, dbPath + '.bak');
     }
-    var fileContent = Array.from(this.triples).map((triple) =>
+    var fileContent = Array.from<Triple>(this.triples).map((triple) =>
       [
         triple.subject.replace(",", "\\,"),
         triple.predicate.replace(",", "\\,"),
