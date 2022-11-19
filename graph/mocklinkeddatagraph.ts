@@ -33,8 +33,9 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
   // Methods inherited from Graph
 
   insert(triple: Triple) {
-    this.triples.push(triple);
-    this.triples = _.uniqWith(this.triples, _.isEqual);
+    if (!_.find(this.triples, (e) => _.isEqual(e, triple))) {
+      this.triples.push(triple);
+    }
     return Promise.resolve();
   }
 
