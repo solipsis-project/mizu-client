@@ -119,10 +119,12 @@ async function parseInputFile(inputPath: string, outputPath: string) {
         if (!is_multiline) { // Flush the buffer before processing the next line.
             if (buffer != '') {
                 if (state == "parsing_command") {
-                    await output.write(`\t$${RESULT_VARIABLE_NAME} = (${buffer})\n`);
+                    await output.write(`\t$${RESULT_VARIABLE_NAME} = @((${buffer}) -Replace "[\\s]", "")\n`);
                 } else {
-                    const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${buffer}', got $${RESULT_VARIABLE_NAME}}`;
-                    await output.write(`\tif ($${RESULT_VARIABLE_NAME} -ne '${buffer}') \n{\n${FAILURE_TEMPLATE(test_name, error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE(test_name)}}\n`);
+                    const actual_output = `($${RESULT_VARIABLE_NAME} -join "")`
+                    const expected_output = buffer.replace(/\s/g, '');
+                    const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${expected_output}', got '${actual_output}}'`;
+                    await output.write(`\tif (${actual_output} -ne '${expected_output}') \n{\n${FAILURE_TEMPLATE(test_name, error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE(test_name)}}\n`);
                 }
                 buffer = '';
             }
