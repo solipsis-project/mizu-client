@@ -7,9 +7,10 @@ import util from 'util';
 import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common.js';
 import dagToTriples from './dagToTriples.js';
 import triplesToDag from './triplesToDag.js';
-import { CID } from 'multiformats/cid';
+import { CID } from 'multiformats';
 import normalizePath from '../normalizePath.js';
 import * as Logger from '../logger.js';
+import _ from 'lodash';
 
 // The simplest possible implementation of a triplestore and linked data graph.
 // Useful for tests. Don't use this in production, obviously.
@@ -20,7 +21,7 @@ function isVariable(name: string): boolean {
 
 export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
-  triples: Set<Triple> = new Set<Triple>();
+  triples: Array<Triple> = [];
 
   constructor(dbPath: string) {
     super();
@@ -32,36 +33,39 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
   // Methods inherited from Graph
 
   insert(triple: Triple) {
-    this.triples.add(triple);
+    if (!_.find(this.triples, (e) => _.isEqual(e, triple))) {
+      this.triples.push(triple);
+    }
     return Promise.resolve();
   }
 
   delete(triple: Triple) {
-    this.triples.delete(triple);
+    _.pullAllWith(this.triples, [triple], _.isEqual);
     return Promise.resolve();
   }
 
-  find(pattern?: Triple, context?: ExecutionContext): Set<Triple> {
+  find(pattern?: Triple, context?: ExecutionContext): Array<Triple> {
     if (!pattern) {
       return this.triples;
     }
     // Remove domain name from predicate, since we don't store it in the database.
-    // Not that this assumes that the domain for the predicate will always be the Mizu IRI,
+    // Note that this assumes that the domain for the predicate will always be the Mizu IRI,
     // Which is true if only relative IRIs are used, since we set the base.
     const predicate = pattern.predicate.slice(IRI.length);
-    var results = new Set<Triple>();
+    var results = [];
     this.triples.forEach((triple) => {
-      if ((isVariable(pattern.subject) || (pattern.subject == triple.subject)) &&
-        (isVariable(pattern.predicate) || (predicate == triple.predicate)) &&
-        (isVariable(pattern.object) || (pattern.object == triple.object))) {
-        results.add(triple);
+      const subjectMatch = isVariable(pattern.subject) || (pattern.subject == triple.subject);
+      const predicateMatch = isVariable(pattern.predicate) || (predicate == triple.predicate);
+      const objectMatch = isVariable(pattern.object) || (pattern.object == triple.object);
+      if (subjectMatch && predicateMatch && objectMatch) {
+        results.push(triple);
       }
     });
     return results;
   }
 
   clear(): Promise<void> {
-    this.triples.clear();
+    this.triples = [];
     return Promise.resolve();
   }
 
@@ -69,9 +73,9 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
 
   count(pattern?: Triple) {
     if (!pattern) {
-      return Promise.resolve(this.triples.size);
+      return Promise.resolve(this.triples.length);
     }
-    return Promise.resolve(this.find(pattern).size)
+    return Promise.resolve(this.find(pattern).length)
   }
 
   forEach(callback) {
@@ -79,14 +83,14 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     return Promise.resolve();
   }
 
-  async putIPLD(root: string, dag: IPLDObject): Promise<void> {
-    for await (const triple of dagToTriples(root, dag, false)) {
-      Logger.debug((logger) => logger("added triple: ", triple));
+  async putIPLD(root: string, dag: IPLD): Promise<void> {
+    for await (const triple of dagToTriples(root, dag)) {
+      // Logger.debug((logger) => logger("added triple: ", triple));
       await this.insert(triple);
     }
   }
 
-  async getIPLD(root: string, follow_links = false): Promise<IPLDObject> {
+  async getIPLD(root: string): Promise<IPLD> {
     // Compute the root subject.
     // Find all its properties
     // Make new queries for them.
@@ -95,7 +99,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     // Making as-needed queries is probably better.
 
     if (true) {
-      return triplesToDag(root, Array.from(this.find()), follow_links) as IPLD;
+      return triplesToDag(root, Array.from(this.find())) as IPLD;
     }
 
     const subjects = new Map<string, IPLD>();
@@ -114,7 +118,6 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
       <${subject}> ?p ?o
       }`;
       for (const result of await resolveQuery(graph, query)) {
-        console.log(result);
         const resultLinkedData = await getSubject(result['?o']);
         subjectLinkedData[result['?p']] = resultLinkedData;
       }
@@ -130,7 +133,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     var lineNumber = 0;
     content.split('\n').forEach((line) => {
       lineNumber++;
-      const terms = line.split(new RegExp('(?<!\\\\),'));
+      const terms = line.split(new RegExp('(?<!\\\\),')).map((term) => term.replace("\\,", ","));
       if (terms.length == 0) {
         // Allow empty lines to ensure that we correctly parse a db with no records.
         return;
@@ -147,7 +150,7 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     if (fs.existsSync(dbPath)) {
       fs.copyFileSync(dbPath, dbPath + '.bak');
     }
-    var fileContent = Array.from(this.triples).map((triple) =>
+    var fileContent = Array.from<Triple>(this.triples).map((triple) =>
       [
         triple.subject.replace(",", "\\,"),
         triple.predicate.replace(",", "\\,"),

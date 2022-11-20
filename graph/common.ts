@@ -2,12 +2,12 @@ import { Algebra } from 'sparqljs';
 import { Bindings, Graph, HashMapDataset, PipelineStage, PlanBuilder } from 'sparql-engine';
 import { QueryOutput } from 'sparql-engine/dist/engine/plan-builder.js';
 
-export type IPLDValue = string | number | boolean | IPLD | Array<IPLDValue>;
+export type IPLDValue = string | number | boolean | IPLD;
 
 export type IPLDObject = IPLD | Array<IPLDValue>;
 
 export interface IPLD {
-    [x: string]: IPLDValue;
+    [x: string]: IPLDValue | Array<IPLDValue>;
 }
 
 export interface LinkedDataGraph extends Graph {
@@ -25,7 +25,7 @@ export function makeTriple(subject: string, predicate: string, object: string) {
     return { subject, predicate, object };
 }
 
-export const IRI = "https://mizu.io/";
+export const IRI = "https://mizu.stream/";
 
 // TODO:
 // -learn SPARQL

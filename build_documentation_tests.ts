@@ -15,33 +15,61 @@ const TEST_CASE_PREFIX = "[test]: #";
 const RESULT_VARIABLE_NAME = "CITestResult" // chosen to be unlikely to collide with variables used in the examples.
 
 const PREAMBLE = '\
+Param(\n\
+    [Parameter(Position=0)]\n\
+    [string[]]\n\
+    $TestFlags\n\
+)\n\
+$EnabledTests = New-Object System.Collections.Generic.List[string]\n\
+$DisabledTests = New-Object System.Collections.Generic.List[string]\n\
+$RunUnnamedTests = $true\n\
+\n\
+foreach ($TestFlag in $TestFlags)\n\
+{\n\
+    if ($TestFlag.substring(0, 1) -eq "!") {\n\
+        $DisabledTests.Add($TestFlag.substring(1))\n\
+        $RunUnnamedTests = $true\n\
+    } else {\n\
+        $EnabledTests.Add($TestFlag)\n\
+        $RunUnnamedTests = $false\n\
+    }\n\
+}\n\
 $FailedTests = 0\n\
 $PassedTests = 0\n\
+$SkippedTests = 0\n\
 $TotalTests = 0\n\
 ';
 
-const SUCCESS_TEMPLATE = '\
-\t$PassedTests++\n\
-\t$TotalTests++\n\
-';
+const SUCCESS_TEMPLATE = (testName: string) => `\
+\t\techo "Passed: ${testName}"\n\
+\t\t$PassedTests++\n\
+\t\t$TotalTests++\n\
+`;
 
-const FAILURE_TEMPLATE = (errorMessage: string) => `\
-\techo "${errorMessage}"\n\
-\t$FailedTests++\n\
-\t$TotalTests++\
+const SKIPPED_TEMPLATE = (testName: string) => `\
+\t\techo "Skipping ${testName}"\n\
+\t\t$SkippedTests++\n\
+\t\t$TotalTests++\n\
+`;
+
+const FAILURE_TEMPLATE = (testName: string, errorMessage: string) => `\
+\t\techo "Failed: ${testName}"\n\
+\t\techo "${errorMessage}"\n\
+\t\t$FailedTests++\n\
+\t\t$TotalTests++\
 `;
 
 const POSTAMBLE = (inputPath: string) => ` \
 if ($FailedTests -gt 0) {\n\
-    throw "$FailedTests/$TotalTests examples failed in ${inputPath}; see above for more information."\n\
+    throw "$SkippedTests skipped, $PassedTests passed, $FailedTests failed in ${inputPath}; see above for more information."\n\
 } else {\n\
-    echo "Verified all $TotalTests examples in ${inputPath}."\n\
+    echo "$SkippedTests skipped, $PassedTests passed in ${inputPath}."\n\
 }\
 `;
 
 /*
 Scan each file, looking for codeblocks preceeded by the following link label:
-[test]: #
+[test]: # (test_name)
 In the following code block, each line that begins with a '>' is interpreted as a command.
 Each line that doesn't begin with a '>' is interpreted as an expected response.
 
@@ -59,11 +87,20 @@ async function parseInputFile(inputPath: string, outputPath: string) {
     var state: State = "awaiting_comment";
     var lineNumber = 0;
     var buffer = "";
+    var test_name = "";
     for await (const line of lines) {
         lineNumber++;
         if (state == "awaiting_comment") {
-            if (line == TEST_CASE_PREFIX) {
+            if (line.startsWith(TEST_CASE_PREFIX)) {
                 state = "awaiting_block_start";
+                const start_index = line.indexOf('(')
+                if (start_index == -1) {
+                    continue;
+                }
+                const end_index = line.indexOf(')')
+                test_name = line.substring(start_index + 1, end_index)
+                const test_name_prefix = (test_name == "") ? "($RunUnnamedTests)" : `(($EnabledTests -Contains "${test_name}") -Or ( $RunUnnamedTests -And (-Not ($DisabledTests -Contains "${test_name}"))))`
+                await output.write(`if ( -Not ${test_name_prefix}) {\n${SKIPPED_TEMPLATE(test_name)}} else {\n`)
             }
             continue;
         } else if (state == "awaiting_block_start") {
@@ -82,14 +119,18 @@ async function parseInputFile(inputPath: string, outputPath: string) {
         if (!is_multiline) { // Flush the buffer before processing the next line.
             if (buffer != '') {
                 if (state == "parsing_command") {
-                    await output.write(`$${RESULT_VARIABLE_NAME} = (${buffer})\n`);
+                    await output.write(`\t$${RESULT_VARIABLE_NAME} = @((${buffer}) -Replace "[\\s]", "")\n`);
                 } else {
-                    const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${buffer}', got $${RESULT_VARIABLE_NAME}}`;
-                    await output.write(`if ($${RESULT_VARIABLE_NAME} -ne '${buffer}') \n{\n${FAILURE_TEMPLATE(error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE}}\n`);
+                    const actual_output = `($${RESULT_VARIABLE_NAME} -join "")`
+                    const expected_output = buffer.replace(/\s/g, '');
+                    const error_message = `Unexpected result in ${inputPath}, line ${lineNumber}: expected '${expected_output}', got '${actual_output}}'`;
+                    await output.write(`\tif (${actual_output} -ne '${expected_output}') \n{\n${FAILURE_TEMPLATE(test_name, error_message)}\n}\nelse\n{\n${SUCCESS_TEMPLATE(test_name)}}\n`);
                 }
                 buffer = '';
             }
             if (is_block_end) {
+                await output.write('}\n')
+                test_name = "";
                 state = "awaiting_comment";
                 continue;
             }
@@ -101,7 +142,7 @@ async function parseInputFile(inputPath: string, outputPath: string) {
                 buffer = line;
             }
         } else if (state == "parsing_command") {
-            buffer += "\n" + line;
+            buffer += "\n\t" + line;
         } else if (state == "parsing_response") {
             // Escape single quotes in the expected output.
             buffer += "\n" + line.replace(/'/g, "''");

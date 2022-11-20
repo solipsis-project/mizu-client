@@ -8,7 +8,7 @@ import stream from 'stream';
 import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common.js';
 import dagToTriples from './dagToTriples.js';
 import triplesToDag from './triplesToDag.js';
-import { CID } from 'multiformats/cid';
+import { CID } from 'multiformats';
 import normalizePath from '../normalizePath.js';
 
 // Based on sparql-engine/blob/master/examples/n3.js
@@ -86,7 +86,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
   }
 
   async putIPLD(path: string, dag: IPLD): Promise<void> {
-    for await (const triple of dagToTriples(path, dag, false)) {
+    for await (const triple of dagToTriples(path, dag)) {
       console.log(triple);
       await this.insert(triple);
     }
@@ -114,7 +114,7 @@ export class N3Graph extends Graph implements LinkedDataGraph {
       subjects.set(subject, subjectLinkedData);
       // TODO: why does this return every record in the datastore?
       const query = `
-      PREFIX MIZU: <https://mizu.io/>
+      PREFIX MIZU: <https://mizu.stream/>
       SELECT ?p ?o
       WHERE {
       <${subject}> ?p ?o

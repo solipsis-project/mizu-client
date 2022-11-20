@@ -39,4 +39,12 @@ COPY --from=powershell /powershell /powershell
 
 RUN ln -s /powershell/pwsh /usr/bin/powershell
 
+# Create the keys used for tests.
+
+RUN npm run --silent keygen 'test' > /id_rsa
+
 CMD ["npm", "run", "test"]
+
+FROM ci-test as ci-run-tests
+
+RUN npm run test

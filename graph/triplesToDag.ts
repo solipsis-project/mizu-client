@@ -24,8 +24,7 @@ function parseIPLD(dag : TripleRecord) : IPLDValue {
 
 export default function triplesToDag(
         root : string,
-        triples : Triple[],
-        follow_links : boolean) : IPLDValue {
+        triples : Triple[]) : IPLDValue {
     var hashTable : { [x : string] : TripleRecord } = {};
     for (const { subject, predicate, object } of triples) {
         if (!(subject in hashTable)) {

@@ -7,7 +7,7 @@ import levelgraph from 'levelgraph'
 import jsonld from 'levelgraph-jsonld'
 
 import { IPLD, LinkedDataGraph, resolveQuery, Triple } from './common.js'
-import { CID } from 'multiformats/cid'
+import { CID } from 'multiformats'
 import { Algebra } from 'sparqljs'
 import { VectorStage } from 'sparql-engine/dist/engine/pipeline/vector-pipeline.js'
 

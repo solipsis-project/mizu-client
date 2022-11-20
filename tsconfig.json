@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    
+    // Workaround for https://github.com/solipsis-project/mizu-client/issues/20
+    "skipLibCheck": true,
+    
     "module": "esnext",
     "esModuleInterop": true,
     "target": "es6",
