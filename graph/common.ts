@@ -1,6 +1,7 @@
 import { Algebra } from 'sparqljs';
 import { Bindings, Graph, HashMapDataset, PipelineStage, PlanBuilder } from 'sparql-engine';
 import { QueryOutput } from 'sparql-engine/dist/engine/plan-builder.js';
+import _ from 'lodash';
 
 export type IPLDValue = string | number | boolean | IPLD;
 
@@ -32,6 +33,34 @@ export const IRI = "https://mizu.stream/";
 // -read documentation for sparql-engine
 // -figure out what's going on with "start" and "end"
 
+function unwrapTripleObject(obj: string): any {
+    // Since all triple objects are stored as strings, we must unquote string literals and evaluate number literals.
+    if (obj.length >= 2 && obj[0] == '"' && obj[obj.length-1] == '"') {
+        return obj.substring(1, obj.length-1);
+    }
+    if (!isNaN(Number(obj))) {
+        const objAsNumber = parseFloat(obj)
+        if (!isNaN(objAsNumber)) {
+            return objAsNumber;
+        }
+    }
+    return obj;
+}
+
+function unwrapTripleObjectsInObj(obj: any): any {
+    var result = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (_.isString(value)) {
+            result[key] = unwrapTripleObject(value);
+        } else if (value instanceof Object) {
+            result[key] = unwrapTripleObjectsInObj(value);
+        } else {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
 export function resolveQuery(graph: LinkedDataGraph, query: string): Promise<Array<any>> {
     const baseQuery = `
     BASE <${IRI}>
@@ -50,7 +79,8 @@ export function resolveQuery(graph: LinkedDataGraph, query: string): Promise<Arr
         var results = [];
         iterator.subscribe(
             bindings => {
-                results.push((bindings as Bindings).toObject());
+                const bindingMap = (bindings as Bindings).toObject();
+                results.push(unwrapTripleObjectsInObj(bindingMap));
             },
             err => reject(err),
             () => resolve(results)
