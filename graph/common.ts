@@ -61,6 +61,17 @@ function unwrapTripleObjectsInObj(obj: any): any {
     return result;
 }
 
+function getQueryIterator(query: string, dataset: HashMapDataset): PipelineStage<QueryOutput> {
+    try {
+        // Creates a plan builder for the RDF dataset
+        const builder = new PlanBuilder(dataset)
+
+        return builder.build(query) as PipelineStage<QueryOutput>;
+    } catch(e) {
+        throw `Error while running sparql-engine: ${e}`;
+    }
+}
+
 export function resolveQuery(graph: LinkedDataGraph, query: string): Promise<Array<any>> {
     const baseQuery = `
     BASE <${IRI}>
@@ -68,12 +79,8 @@ export function resolveQuery(graph: LinkedDataGraph, query: string): Promise<Arr
 
     const dataset = new HashMapDataset(IRI, graph)
 
-    // Creates a plan builder for the RDF dataset
-    const builder = new PlanBuilder(dataset)
-
-    // Get an iterator to evaluate the query
-    const iterator = builder.build(baseQuery) as PipelineStage<QueryOutput>;
-
+    const iterator = getQueryIterator(baseQuery, dataset);
+    
     // Read results
     return new Promise<Array<any>>((resolve, reject) => {
         var results = [];
