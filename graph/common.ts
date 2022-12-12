@@ -52,7 +52,9 @@ function unwrapTripleObjectsInObj(obj: any): any {
     for (const [key, value] of Object.entries(obj)) {
         if (_.isString(value)) {
             result[key] = unwrapTripleObject(value);
-        } else if (value instanceof Object) {
+        } else if (_.isArray(value)) {
+            result[key] = value.map(unwrapTripleObjectsInObj);
+        } else if (_.isObject(value)) {
             result[key] = unwrapTripleObjectsInObj(value);
         } else {
             result[key] = value;
@@ -80,7 +82,7 @@ export function resolveQuery(graph: LinkedDataGraph, query: string): Promise<Arr
     const dataset = new HashMapDataset(IRI, graph)
 
     const iterator = getQueryIterator(baseQuery, dataset);
-    
+
     // Read results
     return new Promise<Array<any>>((resolve, reject) => {
         var results = [];
