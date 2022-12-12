@@ -1,12 +1,31 @@
 import sparqlConverter from 'json-rql-sparql'
 
 import { getStorage, GraphClass, Triple } from './graph/index.js'
-import { IPLD, LinkedDataGraph, resolveQuery } from './graph/common.js';
+import { IPLD, IPLDObject, IPLDValue, LinkedDataGraph, resolveQuery } from './graph/common.js';
 import { getInput, getStringInput } from './input.js';
 import { QueryOptions, QuerySyntax } from './cli/query/options.js';
 import createIpfs from './ipfs.js';
 import * as Logger from './logger.js';
 import _ from 'lodash';
+
+function unescapeReservedFields(dag) {
+    if (!_.isObject(dag)) {
+        return dag;
+    }
+    if (_.isArray(dag)) {
+        return dag.map(unescapeReservedFields);
+    }
+    var result = {};
+    for (const [key, value] of Object.entries(dag)) {
+        const newValue = unescapeReservedFields(value)
+        if (key.startsWith('$$')) {
+            result[key.substring(1)] = newValue;
+        } else {
+            result[key] = newValue;
+        }
+    }
+    return result;
+}
 
 async function getQueryString(options: QueryOptions, ipfs_client: any): Promise<string> {
     switch (options.syntax) {
@@ -23,8 +42,8 @@ async function getQueryString(options: QueryOptions, ipfs_client: any): Promise<
                 throw "Query input must be an object when query type is JsonRQL."
             }
             return new Promise<string>((resolve, reject) => {
-                const message = { ...context, ...queryJson};
-                console.log(message);
+                const unescapedQueryJson = unescapeReservedFields(queryJson);
+                const message = { ...context, ...unescapedQueryJson};
                 sparqlConverter.toSparql(message, (err, sparql) => {
                     if (err) {
                         reject(err);
