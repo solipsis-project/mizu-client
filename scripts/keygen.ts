@@ -3,6 +3,8 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 import esMain from 'es-main';
 
+export const COMMAND = 'keygen <password>';
+
 export function builder(yargs) {
     return yargs.positional('password', {
         describe: 'Password to encrypt key with',

@@ -2,6 +2,7 @@ import yargs from "yargs";
 import Flags, { LogLevelChoices, StorageChoices } from "./flags.js";
 import { BaseCommandOptions, InputOption, InputType, StorageType, IPFSOptions, IPFSMode } from "./options.js";
 import YargsCommandConfig from "yargs-command-config";
+import * as Keygen from '../scripts/keygen.js'
 import * as Logger from '../logger.js';
 
 function baseCommand(_yargs: YargsType) {
@@ -46,6 +47,7 @@ export class YargsFluentInjector {
 
 export function baseYargsInjector(configPath: string, config: any, callback: (yargs: YargsFluentInjector) => YargsFluentInjector) {
     return yargs().command(YargsCommandConfig({ file: configPath }))
+        .command(Keygen.COMMAND, 'Generate a new key pair for signing messages', Keygen.builder, Keygen.handler)
         .command('$0', '', (yargs: YargsType) => {
             return callback(new YargsFluentInjector(baseCommand(yargs).config(config)))
         },
