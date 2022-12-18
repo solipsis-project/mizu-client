@@ -2,7 +2,7 @@ import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, ge
 import Flags from "./flags.js";
 import { BaseCommandOptions, ViewOptions } from "./options.js";
 
-export const command = 'view-raw'
+export const command = 'view-raw <path>'
 export const desc = 'given a Mizu path, print the linked data at that path'
 
 export function apply(yargs: BaseCommand, callback: (options: ViewOptions) => any) {
