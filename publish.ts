@@ -1,6 +1,6 @@
 import { getStorage, GraphClass, Triple } from './graph/index.js'
 import { CID } from 'multiformats'
-import { IPLD, IPLDObject, IRI, LinkedDataGraph } from './graph/common.js';
+import { IPLD, IPLDObject, SUBJECT_PREFIX, LinkedDataGraph } from './graph/common.js';
 import { getInput } from './input.js';
 import { InputType, PublishOptions, SigningType } from './cli/publish/options.js';
 import normalizePath from './normalizePath.js';
@@ -63,6 +63,6 @@ export async function publishCommand(options: PublishOptions): Promise<string> {
 
 
 export async function publish(graph: LinkedDataGraph, cid: CID, dag: IPLDObject) {
-    const root = `${IRI}${normalizePath(`${cid.toString()}/`)}`
+    const root = `${SUBJECT_PREFIX}${normalizePath(`${cid.toString()}/`)}`
     await graph.putIPLD(root, dag);
 }
