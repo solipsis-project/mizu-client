@@ -28,6 +28,8 @@ export function makeTriple(subject: string, predicate: string, object: string) {
 
 export const IRI = "https://mizu.stream/";
 
+export const SUBJECT_PREFIX = IRI + "view_raw/";
+
 // TODO:
 // -learn SPARQL
 // -read documentation for sparql-engine
@@ -47,7 +49,7 @@ function unwrapTripleObject(obj: string): any {
     return obj;
 }
 
-function unwrapTripleObjectsInObj(obj: any): any {
+export function unwrapTripleObjectsInObj(obj: any): any {
     var result = {};
     for (const [key, value] of Object.entries(obj)) {
         if (_.isString(value)) {

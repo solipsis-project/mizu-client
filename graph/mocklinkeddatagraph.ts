@@ -4,7 +4,7 @@ import { Graph, ExecutionContext } from 'sparql-engine'
 import fs from 'fs';
 import util from 'util';
 
-import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple } from './common.js';
+import { IPLD, IPLDObject, IPLDValue, IRI, LinkedDataGraph, makeTriple, resolveQuery, Triple, unwrapTripleObjectsInObj } from './common.js';
 import dagToTriples from './dagToTriples.js';
 import triplesToDag from './triplesToDag.js';
 import { CID } from 'multiformats';
@@ -99,7 +99,8 @@ export class MockLinkedDataGraph extends Graph implements LinkedDataGraph {
     // Making as-needed queries is probably better.
 
     if (true) {
-      return triplesToDag(root, Array.from(this.find())) as IPLD;
+      const unescapedDag = triplesToDag(root, Array.from(this.find())) as IPLD;
+      return unwrapTripleObjectsInObj(unescapedDag);
     }
 
     const subjects = new Map<string, IPLD>();
