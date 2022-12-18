@@ -7,7 +7,7 @@ import normalizePath from './normalizePath.js';
 import * as Logger from './logger.js';
 import createIpfs from './ipfs.js';
 import _ from 'lodash';
-import ReservedFields from './reserved_fields.js';
+import { ReservedFieldConstants } from './reserved_fields.js';
 import { getSigner } from './signer.js';
 import { verify } from './verifier.js';
 import { multibase } from './multibase.js';
@@ -25,8 +25,8 @@ export async function publishCommand(options: PublishOptions): Promise<string> {
         await verify(dag);
         if (signingOption.type != SigningType.None) {
             const signer = await getSigner(signingOption);
-            var signatures = dag[ReservedFields.SIGNATURES];
-            delete dag[ReservedFields.SIGNATURES];
+            var signatures = dag[ReservedFieldConstants.SIGNATURES];
+            delete dag[ReservedFieldConstants.SIGNATURES];
             if (_.isUndefined(signatures)) {
                 signatures = [];
             }
@@ -36,10 +36,10 @@ export async function publishCommand(options: PublishOptions): Promise<string> {
             const multicodecKey = signer.marshallPublicKey();
             const digest = await signer.computeDigest(dag);
             signatures.push({
-                [ReservedFields.SIGNATURES_KEY]: multibase.encode(multicodecKey),
-                [ReservedFields.SIGNATURES_DIGEST]: multibase.encode(digest),
+                [ReservedFieldConstants.SIGNATURES_KEY]: multibase.encode(multicodecKey),
+                [ReservedFieldConstants.SIGNATURES_DIGEST]: multibase.encode(digest),
             })
-            dag[ReservedFields.SIGNATURES] = signatures;
+            dag[ReservedFieldConstants.SIGNATURES] = signatures;
         }
         const GraphClass = getStorage(options.storageType);
         const graph = new GraphClass(options.databasePath);
