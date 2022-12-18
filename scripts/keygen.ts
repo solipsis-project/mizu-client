@@ -2,6 +2,7 @@ import * as crypto from '@libp2p/crypto'
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 import esMain from 'es-main';
+import * as Logger from '../logger.js';
 
 export const COMMAND = 'keygen <password>';
 
@@ -16,7 +17,7 @@ export function builder(yargs) {
 export async function handler(argv) {
     const key = await crypto.keys.generateKeyPair('RSA');
 
-    console.log(await key.export(argv.password));
+    Logger.consoleLog(await key.export(argv.password));
 }
 
 if (esMain(import.meta)) {
