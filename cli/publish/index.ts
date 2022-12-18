@@ -1,4 +1,6 @@
+import os from "os";
 import _ from "lodash";
+import * as Logger from "../../logger.js";
 import { BaseCommandOptions } from "../options.js";
 import { BaseCommand, addInputParameters, getStorageOptions, getInputOptions, getBaseCommandOptions } from "../yargs.js";
 import Flags from "./flags.js";
@@ -25,12 +27,17 @@ export function apply(yargs: BaseCommand, callback: (options: PublishOptions) =>
             const result = yargs
                 .boolean(Flags.IS_PUBLIC)
                 .coerce(Flags.SIGN_PEM, (args) => {
-                    if (!(_.isArray(args) && args.length > 2)) {
-                        throw `${Flags.SIGN_PEM} requires exactly one or two parameters: the path to a PEM file and an optional password for encrypted files.`;
+                    args = args.split(' ');
+                    if (!(_.isArray(args)) || args.length > 2) {
+                        throw new Error(`${Flags.SIGN_PEM} requires exactly one or two parameters: the path to a PEM file and an optional password for encrypted files.`);
+                    }
+                    var keyFilePath = args[0];
+                    if (keyFilePath.startsWith('~/')) {
+                        keyFilePath = os.homedir() + keyFilePath.substring(1);
                     }
                     return {
-                        keyFilePath: args[0],
-                        password: (args.length == 2) ? args[1] : null
+                        keyFilePath: keyFilePath,
+                        password: (args.length == 2) ? args[1] : ''
                     }
                 });
             return result;
