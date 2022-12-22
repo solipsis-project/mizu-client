@@ -63,7 +63,7 @@ export async function queryCommand(options: QueryOptions) {
     const ipfs_client = await createIpfs(options.ipfsOptions);
     try {
         const queryString = await getQueryString(options, ipfs_client);
-        Logger.info((log) => log(`Running query ${queryString}`));
+        Logger.debug((log) => log(`Running query ${queryString}`));
 
         const GraphClass = getStorage(options.storageType);
         const graph = new GraphClass(options.databasePath);
