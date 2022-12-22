@@ -7,6 +7,7 @@ import { QueryOptions } from './cli/query/options.js';
 import { ViewOptions } from './cli/view/options.js';
 import { ipfsUrl } from 'is-ipfs';
 import { option } from 'yargs';
+import * as Logger from './logger.js';
 
 
 export async function viewCommand(options: ViewOptions) {
@@ -19,7 +20,7 @@ export async function viewCommand(options: ViewOptions) {
         path = SUBJECT_PREFIX + path;
     }
     const ipld = await graph.getIPLD(path);
-    console.log(ipld);
+    Logger.consoleLog(JSON.stringify(ipld, null, 2));
     return ipld;
     // This only gets records where this is a subject. If it's a value with no further keys, nothing gets returned.
     // Also what if there's multiple possible values in the datastore: this would return an array, right?
