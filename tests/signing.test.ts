@@ -11,7 +11,7 @@ import { publishCommand } from "../publish.js"
 import { viewCommand } from "../view.js"
 import * as Logger from '../logger.js'
 import { InputType, IPFSMode, SigningType, StorageType } from '../cli/publish/options';
-import ReservedFields from '../reserved_fields.js'
+import { ReservedFieldConstants } from '../reserved_fields.js'
 import expect from 'expect';
 import { assert } from 'console';
 import { VerificationError } from '../errors';
@@ -68,10 +68,10 @@ it('publish auto-signed message', async () => {
             path: `https://mizu.stream/${cidString}`
         });
 
-        expect(ipld).toHaveProperty(ReservedFields.SIGNATURES)
-        const signatures = ipld[ReservedFields.SIGNATURES];
-        expect(signatures).toHaveProperty(ReservedFields.SIGNATURES_KEY);
-        expect(signatures).toHaveProperty(ReservedFields.SIGNATURES_DIGEST);
+        expect(ipld).toHaveProperty(ReservedFieldConstants.SIGNATURES)
+        const signatures = ipld[ReservedFieldConstants.SIGNATURES];
+        expect(signatures).toHaveProperty(ReservedFieldConstants.SIGNATURES_KEY);
+        expect(signatures).toHaveProperty(ReservedFieldConstants.SIGNATURES_DIGEST);
     });
 });
 

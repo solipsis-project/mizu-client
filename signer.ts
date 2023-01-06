@@ -4,9 +4,7 @@ import { IPLD } from './graph/common';
 import * as crypto from '@libp2p/crypto'
 import * as dagCborCodec from '@ipld/dag-cbor'
 import type { PrivateKey, PublicKey } from '@libp2p/interface-keys'
-import fs from 'fs';
 
-import varint from 'varint';
 import * as Logger from './logger';
 import { SigningOption, SigningType } from './cli/publish/options.js';
 import readFile from './readfile.js';
@@ -52,7 +50,6 @@ export async function getSigner(signingOption : Exclude<SigningOption, { type: S
 export async function verifySignature(dagWithoutSignatures: IPLD, encodedKey: string, encodedDigest: string) {
     // key is a multicodec containing a public key. By decoding it, we can determine the algorithm used.
     const keyBuffer = multibase.decode(encodedKey);
-    const keyType = varint.decode(keyBuffer);
     const key : PublicKey = crypto.keys.unmarshalPublicKey(keyBuffer);
 
     // Serialize the dag without signautres so that we can sign it.
